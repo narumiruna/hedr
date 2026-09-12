@@ -195,6 +195,141 @@ for (const { browserColor, label, theme } of cleanThemes) {
     );
   });
 
+  test(`${label} uses sans-serif runtime section headings`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.addInitScript(
+      (value) => localStorage.setItem("herdr-web-theme", value),
+      theme,
+    );
+    await page.goto("/");
+    await page.getByRole("button", { name: "Open menu" }).click();
+    await page
+      .getByRole("menuitem", { name: "Herdr runtime", exact: true })
+      .click();
+    const headings = page
+      .getByRole("dialog", { name: "Herdr runtime" })
+      .getByRole("heading", { level: 3 });
+    await expect(headings).toHaveText([
+      "Plugins",
+      "Plugin actions",
+      "Recent plugin logs",
+      "Official Agent integrations",
+    ]);
+    for (const heading of await headings.all()) {
+      await expect(heading).toHaveCSS("font-family", /Bricolage Grotesque/);
+      await expect(heading).toHaveCSS("font-size", "15px");
+    }
+  });
+
+  test(`${label} uses its accent for resizing and mobile pane navigation`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.addInitScript(
+      (value) => localStorage.setItem("herdr-web-theme", value),
+      theme,
+    );
+    await page.goto("/");
+    const colors = await page
+      .locator(".herdr-web-theme")
+      .evaluate((element) => {
+        const probe = document.createElement("span");
+        element.append(probe);
+        const resolve = (token: string) => {
+          probe.style.color = `var(${token})`;
+          return getComputedStyle(probe).color;
+        };
+        const result = {
+          accent: resolve("--clean-accent"),
+          amber: resolve("--amber-9"),
+          status: resolve("--amber-12"),
+        };
+        probe.remove();
+        return result;
+      });
+    expect(colors.accent).not.toBe(colors.amber);
+    const navigation = page.getByRole("separator", {
+      name: "Resize navigation",
+    });
+    await navigation.hover();
+    expect(
+      await navigation.evaluate(
+        (element) => getComputedStyle(element).backgroundImage,
+      ),
+    ).toContain(colors.accent);
+    await page.mouse.move(0, 0);
+    await page.keyboard.press("Tab");
+    await navigation.focus();
+    expect(
+      await navigation.evaluate((element) => element.matches(":focus-visible")),
+    ).toBe(true);
+    expect(
+      await navigation.evaluate(
+        (element) => getComputedStyle(element).backgroundImage,
+      ),
+    ).toContain(colors.accent);
+    const bounds = await navigation.boundingBox();
+    if (!bounds) throw new Error("Navigation separator is not visible");
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 100);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width / 2 + 16, bounds.y + 100);
+    await expect(navigation).toHaveAttribute("data-dragging", "true");
+    expect(
+      await navigation.evaluate(
+        (element) => getComputedStyle(element).backgroundImage,
+      ),
+    ).toContain(colors.accent);
+    await page.mouse.up();
+
+    for (const direction of ["right", "down"] as const) {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.reload();
+      await page.getByRole("button", { name: "Split pane" }).click();
+      await page.getByRole("menuitem", { name: `Split ${direction}` }).click();
+      const resize = page.getByRole("separator", {
+        name: "Resize terminal panes",
+      });
+      await resize.hover();
+      expect(
+        await resize.evaluate(
+          (element) => getComputedStyle(element).backgroundImage,
+        ),
+      ).toContain(colors.accent);
+      await page.mouse.move(0, 0);
+      await page.keyboard.press("Tab");
+      await resize.focus();
+      expect(
+        await resize.evaluate((element) => element.matches(":focus-visible")),
+      ).toBe(true);
+      expect(
+        await resize.evaluate(
+          (element) => getComputedStyle(element).backgroundImage,
+        ),
+      ).toContain(colors.accent);
+      await resize.press(direction === "right" ? "ArrowRight" : "ArrowDown");
+      await expect(resize).toHaveAttribute("aria-valuenow", "55");
+
+      await page.setViewportSize({ width: 390, height: 700 });
+      const tabs = page
+        .getByRole("tablist", { name: "Session panes" })
+        .getByRole("tab");
+      await expect(tabs).toHaveCount(2);
+      for (const tab of await tabs.all()) {
+        await tab.click();
+        await expect(tab).toHaveAttribute("aria-selected", "true");
+        expect(
+          await tab.evaluate((element) => getComputedStyle(element).boxShadow),
+        ).toContain(colors.accent);
+      }
+      await expect(page.locator(".status-blocked").first()).toHaveCSS(
+        "color",
+        colors.status,
+      );
+    }
+  });
+
   test(`${label} fits 320px mobile Settings with keyboard selection`, async ({
     page,
   }, testInfo) => {
