@@ -318,6 +318,159 @@
   color: var(--ink-muted);
 }
 
+.machine-fleet {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+/* biome-ignore lint/style/noDescendingSpecificity: Machine Fleet selectors do not overlap Attention Inbox selectors. */
+.machine-fleet > header,
+.machine-fleet > header > span,
+/* biome-ignore lint/style/noDescendingSpecificity: Machine Fleet selectors do not overlap Attention Inbox selectors. */
+.machine-card > header,
+.machine-space-list section > header,
+.machine-counts,
+.machine-status {
+  display: flex;
+  align-items: center;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: Machine Fleet selectors do not overlap Attention Inbox selectors. */
+.machine-fleet > header {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+.machine-fleet > header > span {
+  min-width: 0;
+  gap: 8px;
+}
+.machine-fleet > header > span > span,
+.machine-card > header > span:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.machine-fleet h3,
+.machine-fleet p {
+  margin: 0;
+}
+.machine-fleet small,
+.machine-fleet-empty,
+.machine-card-message {
+  color: var(--ink-muted);
+}
+.machine-fleet-grid {
+  display: grid;
+  max-height: 34vh;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  overflow: auto;
+}
+.machine-card {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+}
+/* biome-ignore lint/style/noDescendingSpecificity: Machine Fleet selectors do not overlap Attention Inbox selectors. */
+.machine-card > header {
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.machine-card > header small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.machine-status {
+  flex: 0 0 auto;
+  gap: 5px;
+  color: var(--ink-secondary);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.machine-status i,
+.machine-space-list li > i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gray-8);
+}
+.machine-status[data-state="online"] i,
+.machine-space-list li[data-status="done"] > i,
+.machine-space-list li[data-status="idle"] > i {
+  background: var(--grass-9);
+}
+.machine-status[data-state="offline"] i,
+.machine-space-list li[data-status="blocked"] > i {
+  background: var(--amber-9);
+}
+.machine-space-list li[data-status="working"] > i {
+  background: var(--blue-9);
+}
+.machine-counts {
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.machine-counts span {
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: var(--panel-muted);
+  color: var(--ink-secondary);
+  font-size: 9px;
+}
+.machine-counts span[data-attention="true"] {
+  background: var(--amber-3);
+  color: var(--amber-11);
+}
+.machine-space-list section > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 6px;
+  padding: 8px 10px;
+}
+.machine-space-list section > header small,
+.machine-space-list section > header span {
+  color: var(--ink-muted);
+  font-size: 9px;
+}
+.machine-space-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.machine-space-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px 6px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+}
+.machine-space-list li > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.machine-fleet-error,
+.machine-fleet-empty,
+.machine-card-message {
+  padding: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-muted);
+}
+.machine-fleet-error {
+  color: var(--red-11);
+}
+.machine-fleet code {
+  font-family: "IBM Plex Mono", monospace;
+}
+
 .workflow-layout {
   display: grid;
   min-height: 560px;

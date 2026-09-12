@@ -31,9 +31,10 @@ describe("Herdr status compatibility", () => {
     expect(parseHerdrProtocol("20beta")).toBeUndefined();
   });
 
-  test("accepts terminal protocols 19 and 20 when the CLI matches", () => {
+  test("accepts Herdr 0.8 and 0.9 terminal protocols when the CLI matches", () => {
     expect(terminalProtocolReason(19, 19)).toBe("");
     expect(terminalProtocolReason(20, 20)).toBe("");
+    expect(terminalProtocolReason(22, 22)).toBe("");
   });
 
   test("explains unsupported and mismatched terminal protocols", () => {

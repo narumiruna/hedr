@@ -9,6 +9,7 @@ export type AgentStatus =
 export type RuntimeName =
   | "Claude Code"
   | "Codex"
+  | "Muse"
   | "OpenCode"
   | "Pi"
   | "Qwen Code";

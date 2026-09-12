@@ -106,6 +106,7 @@ describe("herdr-web terminal-first workbench", () => {
     expect(
       screen.getByRole("dialog", { name: "Start a new Agent" }),
     ).toBeVisible();
+    expect(screen.getByRole("radio", { name: /Muse/ })).toBeVisible();
     expect(screen.getByRole("radio", { name: /Qwen Code/ })).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(trigger).toHaveFocus());
@@ -712,7 +713,7 @@ describe("herdr-web terminal-first workbench", () => {
 
     await user.click(screen.getByRole("button", { name: "New agent" }));
     expect(screen.getByLabelText("Agent name")).toHaveFocus();
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
+    expect(screen.getAllByRole("radio")).toHaveLength(6);
     await user.type(screen.getByLabelText("Agent name"), "security-audit");
     await user.click(screen.getByRole("radio", { name: /Codex/i }));
     expect(

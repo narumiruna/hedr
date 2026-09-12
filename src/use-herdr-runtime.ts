@@ -24,6 +24,7 @@ import {
   type PluginLogInfo,
   type PushConfig,
   rememberAccessToken,
+  type SavedMachineSummary,
   type TerminalTicket,
   type TerminalTicketInput,
   type UploadedFile,
@@ -120,6 +121,7 @@ interface HerdrRuntime {
   refresh: () => Promise<void>;
   invokePluginAction: (actionId: string) => Promise<void>;
   listViewerShares: () => Promise<ViewerShare[]>;
+  loadMachines: () => Promise<SavedMachineSummary[]>;
   loadProjectWorkflows: (projectKey: string) => Promise<WorkflowTemplate[]>;
   loadRuntimeManagement: () => Promise<RuntimeManagementState>;
   manageIntegration: (
@@ -480,6 +482,10 @@ export function useHerdrRuntime(
     listViewerShares: async () => {
       if (!client || !live) return [];
       return (await client.viewerShares()).shares;
+    },
+    loadMachines: async () => {
+      if (!client || !live) return [];
+      return (await client.machines()).machines;
     },
     loadProjectWorkflows: async (projectKey) => {
       if (!client || !live) return [];

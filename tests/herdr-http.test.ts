@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { createHerdrHttpHandler, type HerdrService } from "../server/http-app";
+import type { SavedMachineService } from "../server/machine-service";
 import type { PushNotificationService } from "../server/push-notifications";
 import { TerminalTicketStore } from "../server/terminal-tickets";
 
@@ -21,6 +22,7 @@ async function startApi(
   service: HerdrService,
   terminal?: {
     configured: boolean;
+    machineService?: SavedMachineService;
     pushNotifications?: PushNotificationService;
     tickets: TerminalTicketStore;
     viewToken?: string;
@@ -28,6 +30,7 @@ async function startApi(
 ): Promise<string> {
   const server = createServer(
     createHerdrHttpHandler({
+      machineService: terminal?.machineService,
       pushNotifications: terminal?.pushNotifications,
       service,
       terminalConfigured: terminal?.configured,
@@ -158,6 +161,46 @@ describe("herdr HTTP bridge", () => {
       },
     );
     expect(observe.status).toBe(201);
+  });
+
+  test("exposes saved SSH summaries only to controllers", async () => {
+    const machineService = {
+      list: vi.fn().mockResolvedValue({
+        machines: [
+          {
+            agentCount: 2,
+            enabled: true,
+            id: "machine-one",
+            label: "Build",
+            needsInput: 1,
+            selected: false,
+            session: "agents",
+            status: "online",
+            workspaceCount: 1,
+            workspaces: [],
+          },
+        ],
+        type: "machine_list",
+      }),
+    } as unknown as SavedMachineService;
+    const baseUrl = await startApi(fakeService(), {
+      configured: true,
+      machineService,
+      tickets: new TerminalTicketStore(),
+      viewToken: "view-secret",
+    });
+
+    const controller = await fetch(`${baseUrl}/api/herdr/machines`, {
+      headers: { authorization: "Bearer test-secret" },
+    });
+    expect(await controller.json()).toMatchObject({
+      machines: [{ label: "Build", needsInput: 1 }],
+    });
+    const viewer = await fetch(`${baseUrl}/api/herdr/machines`, {
+      headers: { authorization: "Bearer view-secret" },
+    });
+    expect(viewer.status).toBe(403);
+    expect(machineService.list).toHaveBeenCalledOnce();
   });
 
   test("configures authenticated controller-only Web Push subscriptions", async () => {

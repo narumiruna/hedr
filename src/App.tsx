@@ -1730,6 +1730,11 @@ export function App({
           accessRole={runtime.accessRole}
           attentionStartedAt={attention.preferences.firstSeenAt}
           connection={runtime.connection}
+          loadMachines={
+            runtime.accessRole === "controller"
+              ? runtime.loadMachines
+              : undefined
+          }
           open={missionControlOpen}
           state={state}
           onOpenAgent={openAgentFromSupervision}

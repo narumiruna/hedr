@@ -22,6 +22,7 @@ import {
   validateImage,
   validateImageUploadId,
 } from "./image-upload.js";
+import type { SavedMachineService } from "./machine-service.js";
 import type {
   BrowserPushSubscription,
   PushNotificationService,
@@ -84,6 +85,7 @@ export interface HerdrService {
 }
 
 interface HandlerOptions {
+  machineService?: SavedMachineService;
   service: HerdrService;
   terminalConfigured?: boolean;
   pushNotifications?: PushNotificationService;
@@ -545,6 +547,7 @@ function errorResponse(response: ServerResponse, error: unknown): void {
 // persistence, projection, uploads, and terminal streaming remain separate owners.
 export function createHerdrHttpHandler({
   service,
+  machineService,
   pushNotifications,
   shareStore,
   terminalConfigured = false,
@@ -934,6 +937,19 @@ export function createHerdrHttpHandler({
             message: "This access token does not permit Herdr mutations",
           },
         });
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/herdr/machines") {
+        if (!machineService) {
+          sendJson(response, 404, {
+            error: {
+              code: "machine_api_unavailable",
+              message: "Saved SSH machine supervision is unavailable",
+            },
+          });
+          return;
+        }
+        sendJson(response, 200, await machineService.list());
         return;
       }
       if (

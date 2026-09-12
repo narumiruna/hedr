@@ -64,6 +64,12 @@ describe("workflow templates", () => {
         steps: [{ ...workflow().steps[0], runtime: "sh -c malware" }],
       }),
     ).toBeUndefined();
+    expect(
+      parseWorkflowTemplate({
+        ...workflow(),
+        steps: [{ ...workflow().steps[0], runtime: "Muse" }],
+      }),
+    ).toMatchObject({ steps: [{ runtime: "Muse" }] });
     expect(parseWorkflowTemplates(JSON.stringify([workflow()]))).toHaveLength(
       1,
     );

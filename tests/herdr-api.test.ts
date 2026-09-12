@@ -206,6 +206,28 @@ describe("Herdr API requests", () => {
     ]);
   });
 
+  test("uses the bounded saved-machine supervision route", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ machines: [], type: "machine_list" }), {
+        headers: { "content-type": "application/json" },
+        status: 200,
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new HerdrApiClient("secret").machines();
+
+    expect(timeout).toHaveBeenCalledWith(25_000);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/herdr/machines",
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: "Bearer secret" }),
+        signal: expect.any(AbortSignal),
+      }),
+    );
+  });
+
   test("uses authenticated plugin and integration routes", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     const fetchMock = vi.fn().mockImplementation(
