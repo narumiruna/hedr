@@ -136,7 +136,7 @@ test("Editorial palette propagates into portalled Radix themes", async ({
   }
 });
 
-test("Settings offers four themes and preserves style when toggling appearance", async ({
+test("Settings offers ten themes and preserves style when toggling appearance", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -146,7 +146,7 @@ test("Settings offers four themes and preserves style when toggling appearance",
 
   const settings = page.getByRole("dialog", { name: "Settings" });
   const themes = settings.getByRole("group", { name: "Theme" });
-  await expect(themes.getByRole("radio")).toHaveCount(4);
+  await expect(themes.getByRole("radio")).toHaveCount(10);
   await expect(
     themes.getByRole("radio", { name: /^Editorial Dark/ }),
   ).toBeChecked();

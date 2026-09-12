@@ -22,3 +22,4 @@ import "./styles-overlays.css";
 import "./styles-supervision.css";
 import "./styles-responsive.css";
 import "./styles-classic.css";
+import "./styles-clean.css";

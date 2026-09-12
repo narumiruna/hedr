@@ -16,6 +16,7 @@ import type { Agent, HerdrState, RuntimeName, Workspace } from "../state";
 import { TERMINAL_FONT_SIZE_PRESETS } from "../terminal-preferences";
 import {
   themeAppearance,
+  themeStyle,
   WORKBENCH_THEMES,
   type WorkbenchTheme,
 } from "../theme-preferences";
@@ -792,6 +793,15 @@ export function SettingsDialog({
               <span>
                 <strong>{label}</strong>
                 <small>{description}</small>
+                <span
+                  className={`theme-swatch theme-${themeStyle(option)} ${themeAppearance(option)}`}
+                  aria-hidden="true"
+                >
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </span>
               </span>
             </label>
           ))}

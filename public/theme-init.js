@@ -9,24 +9,25 @@ try {
   const appearance = saved === "light" ? "light" : "dark";
   const themeKey = "herdr-web-theme";
   const savedTheme = localStorage.getItem(themeKey);
-  const themes = [
-    "editorial-light",
-    "editorial-dark",
-    "classic-light",
-    "classic-dark",
-  ];
-  const theme = themes.includes(savedTheme)
-    ? savedTheme
-    : `editorial-${appearance}`;
-  localStorage.setItem(themeKey, theme);
-  const [style, themeAppearance] = theme.split("-");
-  document.documentElement.classList.add(themeAppearance, `theme-${style}`);
+  // Keep this pre-render palette aligned with src/theme-preferences.ts.
   const browserColors = {
     "editorial-light": "#f6f3ed",
     "editorial-dark": "#11110f",
     "classic-light": "#f9f9f8",
     "classic-dark": "#111110",
+    "mist-light": "#f5f7fa",
+    "mist-dark": "#141a22",
+    "sage-light": "#f5f8f5",
+    "sage-dark": "#151c19",
+    "linen-light": "#faf7f2",
+    "linen-dark": "#1c1916",
   };
+  const theme = Object.hasOwn(browserColors, savedTheme)
+    ? savedTheme
+    : `editorial-${appearance}`;
+  localStorage.setItem(themeKey, theme);
+  const [style, themeAppearance] = theme.split("-");
+  document.documentElement.classList.add(themeAppearance, `theme-${style}`);
   document
     .querySelector('meta[name="theme-color"]')
     ?.setAttribute("content", browserColors[theme]);
