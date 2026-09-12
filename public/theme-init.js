@@ -22,7 +22,8 @@ try {
     "linen-light": "#faf7f2",
     "linen-dark": "#1c1916",
   };
-  const theme = Object.hasOwn(browserColors, savedTheme)
+  // Keep the pre-render script compatible with browsers without Object.hasOwn.
+  const theme = Object.keys(browserColors).includes(savedTheme)
     ? savedTheme
     : `editorial-${appearance}`;
   localStorage.setItem(themeKey, theme);
