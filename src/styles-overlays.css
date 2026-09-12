@@ -46,7 +46,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--border-strong);
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--panel-raised);
   color: var(--ink);
   box-shadow: var(--shadow-dialog);
@@ -284,14 +284,12 @@
   align-items: center;
   padding: 9px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
+  border-radius: 5px;
+  background: transparent;
   cursor: pointer;
 }
 .runtime-options label[data-selected="true"] {
   border-color: var(--amber-8);
-  background: var(--amber-2);
-  box-shadow: inset 0 0 0 1px var(--amber-7);
 }
 .runtime-options label > span {
   display: flex;
@@ -460,14 +458,12 @@
   align-items: center;
   padding: 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
+  border-radius: 5px;
+  background: transparent;
   cursor: pointer;
 }
 .theme-options label[data-selected="true"] {
   border-color: var(--amber-8);
-  background: var(--amber-2);
-  box-shadow: inset 0 0 0 1px var(--amber-7);
 }
 .theme-options label > span {
   display: flex;
@@ -516,14 +512,12 @@
   align-items: center;
   padding: 9px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
+  border-radius: 5px;
+  background: transparent;
   cursor: pointer;
 }
 .terminal-size-options label[data-selected="true"] {
   border-color: var(--amber-8);
-  background: var(--amber-2);
-  box-shadow: inset 0 0 0 1px var(--amber-7);
 }
 .terminal-size-options label > span {
   display: flex;
@@ -768,9 +762,7 @@
   min-height: 100dvh;
   place-items: center;
   padding: 24px;
-  background:
-    radial-gradient(circle at 50% 15%, var(--amber-3), transparent 34%),
-    var(--canvas);
+  background: var(--canvas);
 }
 .connection-card {
   display: flex;
@@ -780,9 +772,8 @@
   gap: 16px;
   padding: 42px;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 8px;
   background: var(--panel-raised);
-  box-shadow: var(--shadow-dialog);
   text-align: center;
 }
 .connection-card .brand-mark {

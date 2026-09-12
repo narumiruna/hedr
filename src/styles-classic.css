@@ -18,7 +18,6 @@
   --terminal-border: var(--sand-7);
   --terminal-text: var(--sand-12);
   --terminal-muted: var(--sand-11);
-  --terminal-shadow: 0 8px 24px rgb(42 38 29 / 7%);
   --brand-cutout: var(--canvas);
   --focus-ring: #365f91;
   --shadow-small: 0 1px 2px rgb(33 30 22 / 7%), 0 8px 24px rgb(33 30 22 / 5%);
@@ -48,7 +47,6 @@
   --focus-ring: #dfaa72;
   --shadow-small: 0 1px 2px rgb(0 0 0 / 26%), 0 8px 28px rgb(0 0 0 / 12%);
   --shadow-dialog: 0 24px 90px rgb(20 18 13 / 30%);
-  --terminal-shadow: 0 8px 28px rgb(0 0 0 / 18%);
 }
 
 .theme-classic .brand-mark {
@@ -66,11 +64,6 @@
 .theme-classic .workspace-item {
   border-radius: 9px;
 }
-.theme-classic .workspace-glyph,
-.theme-classic .command-result-icon {
-  border-radius: 8px;
-  box-shadow: var(--shadow-small);
-}
 .theme-classic .agent-item {
   border-radius: 8px;
 }
@@ -86,10 +79,6 @@
 }
 .theme-classic .command-button {
   border-radius: 8px;
-  box-shadow: var(--shadow-small);
-}
-.theme-classic .attention-banner {
-  border-radius: 9px;
 }
 .theme-classic .empty-workbench h1,
 .theme-classic .connection-card h1 {
@@ -100,12 +89,6 @@
 .theme-classic .session-tabs {
   border-bottom: 0;
   background: var(--panel);
-}
-.theme-classic .session-tab {
-  border-radius: 7px 7px 0 0;
-}
-.theme-classic .session-tab[data-state="active"] {
-  box-shadow: inset 0 -2px 0 var(--amber-9);
 }
 .theme-classic .session-tabs-scrollbar-thumb {
   border-radius: 4px;

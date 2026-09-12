@@ -93,8 +93,7 @@
     min-height: 62px;
     grid-template-columns: 44px minmax(0, 1fr) auto;
     gap: 4px;
-    margin: 0 6px 6px;
-    padding: 6px;
+    padding: 8px;
   }
   .message-composer .rt-Button {
     min-width: 44px;

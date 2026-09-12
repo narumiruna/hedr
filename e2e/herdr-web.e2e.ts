@@ -67,7 +67,7 @@ test("Editorial palette propagates into portalled Radix themes", async ({
     light: {
       buttonBackground: "rgb(156, 61, 45)",
       buttonText: "rgb(255, 253, 250)",
-      selectedBackground: "rgb(245, 230, 225)",
+      selectedBorder: "rgb(170, 80, 61)",
       tokens: {
         "--amber-9": "#9c3d2d",
         "--blue-9": "#405779",
@@ -79,7 +79,7 @@ test("Editorial palette propagates into portalled Radix themes", async ({
     dark: {
       buttonBackground: "rgb(241, 154, 132)",
       buttonText: "rgb(17, 17, 15)",
-      selectedBackground: "rgb(56, 34, 29)",
+      selectedBorder: "rgb(210, 126, 104)",
       tokens: {
         "--amber-9": "#f19a84",
         "--blue-9": "#a9c2ec",
@@ -118,7 +118,12 @@ test("Editorial palette propagates into portalled Radix themes", async ({
     );
     await expect(selectedTheme).toHaveCSS(
       "background-color",
-      expectedThemes[appearance].selectedBackground,
+      "rgba(0, 0, 0, 0)",
+    );
+    await expect(selectedTheme).toHaveCSS("box-shadow", "none");
+    await expect(selectedTheme).toHaveCSS(
+      "border-color",
+      expectedThemes[appearance].selectedBorder,
     );
     await expect(settings.getByRole("button", { name: "Apply" })).toHaveCSS(
       "background-color",
@@ -248,8 +253,20 @@ test("Classic themes retain accessible controls, focus, and dialogs", async ({
         border: contrast(styles.borderColor, styles.backgroundColor),
         focus: contrast(styles.outlineColor, styles.backgroundColor),
         outlineStyle: styles.outlineStyle,
+        tabIndicator: contrast(
+          getComputedStyle(
+            document.querySelector(
+              '.session-tab[data-state="active"]',
+            ) as Element,
+          ).borderBottomColor,
+          getComputedStyle(document.querySelector(".session-tabs") as Element)
+            .backgroundColor,
+        ),
       };
     });
+    expect(ratios.tabIndicator, `${theme} selected tab`).toBeGreaterThanOrEqual(
+      3,
+    );
     expect(ratios.border, `${theme} control border`).toBeGreaterThanOrEqual(3);
     expect(ratios.focus, `${theme} focus`).toBeGreaterThanOrEqual(3);
     expect(ratios.outlineStyle).toBe("solid");
@@ -410,21 +427,24 @@ test("desktop workbench gives the terminal priority", async ({
           .backgroundColor,
       );
     return {
-      blockedStatus: pair(
-        ".session-tab .status-blocked",
-        ".session-tab .status-blocked",
-      ),
+      blockedStatus: pair(".session-tab .status-blocked", ".session-tabs"),
       compactStatus: pair(
         '.agent-item[data-active="true"] .status-pill',
         '.agent-item[data-active="true"]',
       ),
+      tabIndicator: ratio(
+        getComputedStyle(
+          document.querySelector(
+            '.session-tab[data-state="active"]',
+          ) as Element,
+        ).borderBottomColor,
+        getComputedStyle(document.querySelector(".session-tabs") as Element)
+          .backgroundColor,
+      ),
       primaryAction: pair(".desktop-new-agent", ".desktop-new-agent"),
       composerHint: pair(".composer-hint", ".message-composer"),
       needsInput: pair(".attention-banner", ".attention-banner"),
-      workingStatus: pair(
-        ".session-tab .status-working",
-        ".session-tab .status-working",
-      ),
+      workingStatus: pair(".session-tab .status-working", ".session-tabs"),
       workspacePath: pair(".workspace-cwd", ".interactive-terminal-tools"),
     };
   });
@@ -531,9 +551,9 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
         getComputedStyle(document.querySelector(selector) as Element);
       return {
         mappings: {
-          blockedBackground:
+          unfilledTabStatus:
             rendered(".session-tab .status-blocked").backgroundColor ===
-            normalize(value("--amber-3")),
+            "rgba(0, 0, 0, 0)",
           blockedText:
             rendered(".session-tab .status-blocked").color ===
             normalize(value("--amber-12")),
@@ -551,6 +571,7 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
           focus: contrast("--focus", "--paper"),
           indigo: contrast("--indigo", "--indigo-fill"),
           moss: contrast("--moss", "--moss-fill"),
+          tabIndicator: contrast("--amber-11", "--paper"),
           secondaryInk: contrast("--secondary-ink", "--paper"),
           sumi: contrast("--sumi", "--paper"),
           vermilion: contrast("--vermilion", "--vermilion-fill"),
@@ -559,7 +580,7 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
     });
 
     expect(audit.mappings).toEqual({
-      blockedBackground: true,
+      unfilledTabStatus: true,
       blockedText: true,
       controlBorder: true,
       doneText: true,
@@ -748,6 +769,34 @@ for (const theme of [
     page,
   }) => {
     await prepareVisual(page, theme);
+    for (const selector of [
+      '.workspace-item[data-active="true"]',
+      '.agent-item[data-active="true"]',
+      '.attention-item[data-active="true"]',
+      '.session-tab[data-state="active"]',
+      ".workspace-glyph",
+      ".command-button",
+      ".attention-banner",
+      ".terminal-shell",
+      ".message-composer",
+    ]) {
+      await expect(page.locator(selector).first()).toHaveCSS(
+        "box-shadow",
+        "none",
+      );
+    }
+    const selectedTab = page.getByRole("tab", { selected: true });
+    await expect(selectedTab).toHaveCSS("border-bottom-width", "2px");
+    await expect(selectedTab).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    expect(
+      await selectedTab.evaluate(
+        (element) => getComputedStyle(element).borderBottomColor,
+      ),
+    ).not.toBe("rgba(0, 0, 0, 0)");
+    await expect(page.locator(".message-composer")).toHaveCSS(
+      "border-radius",
+      "0px",
+    );
     for (const viewport of [
       { width: 320, height: 500 },
       { width: 900, height: 700 },
@@ -758,6 +807,14 @@ for (const theme of [
       });
       await composer.fill("Review the changes\nand explain the tradeoffs.");
       await expect(composer).toBeVisible();
+      await expect(page.locator(".message-composer")).toHaveCSS(
+        "outline-width",
+        "2px",
+      );
+      await expect(page.locator(".message-composer")).toHaveCSS(
+        "outline-style",
+        "solid",
+      );
       expect(await hasNoPageOverflow(page)).toBe(true);
       const bounds = await page.evaluate(() => {
         const rect = (selector: string) => {

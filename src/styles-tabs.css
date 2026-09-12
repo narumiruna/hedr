@@ -39,20 +39,20 @@
   width: max-content;
   min-width: 100%;
   height: 48px;
-  align-items: center;
+  align-items: stretch;
   gap: 4px;
-  padding: 6px 12px;
+  padding: 0 12px;
 }
 .session-tab {
   display: inline-flex;
   min-width: 0;
   max-width: 280px;
-  height: 36px;
+  height: 48px;
   align-items: center;
   gap: 7px;
   padding: 0 11px;
   border: 0;
-  border-radius: 7px;
+  border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--ink-muted);
   cursor: pointer;
@@ -63,10 +63,7 @@
   color: var(--ink-secondary);
 }
 .session-tab[data-state="active"] {
-  background: var(--panel-raised);
-  box-shadow:
-    var(--shadow-small),
-    inset 0 -2px 0 var(--amber-9);
+  border-bottom-color: var(--amber-11);
   color: var(--ink);
 }
 .session-tab-icon {
@@ -91,8 +88,12 @@
 }
 .session-tab-status .status-pill {
   gap: 3px;
-  padding: 3px 5px;
-  font-size: 9px;
+  padding: 0;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 .session-tabs-scrollbar {
   display: flex;
@@ -131,12 +132,12 @@
     );
   }
   .session-tabs-list {
-    height: 54px;
-    padding: 5px 8px;
+    height: 48px;
+    padding: 0 8px;
   }
   .session-tab {
     max-width: 220px;
-    height: 44px;
+    height: 48px;
     padding: 0 10px;
   }
   .session-tabs-new.rt-IconButton {

@@ -41,7 +41,6 @@
   --terminal-border: var(--fine-rule);
   --terminal-text: var(--sumi);
   --terminal-muted: var(--secondary-ink);
-  --terminal-shadow: 0 8px 22px rgb(38 35 31 / 6%);
   --brand-cutout: var(--canvas);
   --focus-ring: var(--focus);
   --shadow-small: 0 1px 1px rgb(38 35 31 / 8%);
@@ -126,7 +125,6 @@
   --focus-ring: var(--focus);
   --shadow-small: 0 1px 1px rgb(0 0 0 / 34%);
   --shadow-dialog: 0 24px 72px rgb(0 0 0 / 45%);
-  --terminal-shadow: 0 8px 24px rgb(0 0 0 / 22%);
   --sand-4: #292824;
   --sand-7: var(--control-border);
   --sand-8: #827b70;

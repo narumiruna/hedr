@@ -717,10 +717,8 @@
   align-items: center;
   gap: 9px;
   min-height: 58px;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
 }
 .settings-toggle-options > label:has(select) {

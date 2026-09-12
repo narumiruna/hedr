@@ -6,9 +6,8 @@
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--terminal-border);
-  border-radius: 12px;
+  border-radius: 6px;
   background: var(--terminal);
-  box-shadow: var(--terminal-shadow);
 }
 
 .pane-grid {
