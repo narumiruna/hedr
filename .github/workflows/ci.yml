@@ -43,6 +43,40 @@ jobs:
       - name: Run browser tests
         run: npm run test:e2e
 
+  macos:
+    name: Check macOS browser and visual regressions
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install chromium
+
+      - name: Run browser tests
+        run: npm run test:e2e -- --workers=2
+
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: macos-browser-failures
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   windows:
     name: Check native Windows startup
     runs-on: windows-latest

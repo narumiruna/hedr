@@ -140,6 +140,46 @@ describe("TerminalWorkspace snapshot frames", () => {
     );
   });
 
+  test("keeps adjacent frames in separate accessible scroll regions", () => {
+    const agent = demoAgent();
+    const frame = ["╭──────────╮", "│ content  │", "╰──────────╯"];
+    agent.panes[0].lines = [...frame, ...frame];
+    render(<Harness agent={agent} />);
+
+    const frames = screen.getAllByRole("region", { name: "Terminal frame" });
+    expect(frames).toHaveLength(2);
+    for (const element of frames) {
+      expect(element.textContent).toBe(frame.join("\n"));
+      expect(element).toHaveAttribute("tabindex", "0");
+    }
+  });
+
+  test("preserves adjacent frame containers as a second frame arrives", () => {
+    const agent = demoAgent();
+    const rows = ["╭──────────╮", "│ content  │", "╰──────────╯"];
+    agent.panes[0].lines = [...rows];
+    const { rerender } = render(<Harness agent={agent} />);
+    const first = screen.getByRole("region", { name: "Terminal frame" });
+    first.scrollLeft = 20;
+
+    const updated = structuredClone(agent);
+    updated.panes[0].lines.push(rows[0]);
+    rerender(<Harness agent={updated} />);
+    const frames = screen.getAllByRole("region", { name: "Terminal frame" });
+    expect(frames).toHaveLength(2);
+    expect(frames[0]).toBe(first);
+    const second = frames[1];
+
+    updated.panes[0].lines.push(...rows.slice(1));
+    rerender(<Harness agent={structuredClone(updated)} />);
+    const completed = screen.getAllByRole("region", { name: "Terminal frame" });
+    expect(completed).toEqual([first, second]);
+    expect(first.textContent).toBe(rows.join("\n"));
+    expect(second?.textContent).toBe(rows.join("\n"));
+    expect(first.scrollLeft).toBe(20);
+    expect(second?.scrollLeft).toBe(0);
+  });
+
   test("preserves a frame container when output appends another frame row", () => {
     const agent = demoAgent();
     agent.panes[0].lines = ["╭──────────╮", "│ content  │"];

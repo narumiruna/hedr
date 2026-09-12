@@ -165,8 +165,12 @@ function terminalLineEntries(lines: string[]) {
     occurrences.set(line, occurrence);
     const className = lineClass(line);
     const previous = entries.at(-1);
-    if (className === "terminal-frame" && previous?.className === className) {
-      // A frame shares one scroll offset and keeps its key as rows arrive.
+    if (
+      className === "terminal-frame" &&
+      previous?.className === className &&
+      !line.startsWith("╭")
+    ) {
+      // Each opening border starts a frame; appended rows keep its scroll key.
       previous.line += `\n${line}`;
     } else {
       entries.push({ key: `${line}-${occurrence}`, line, className });
