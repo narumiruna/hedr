@@ -769,6 +769,43 @@ for (const theme of [
     page,
   }) => {
     await prepareVisual(page, theme);
+    const badge = page.locator(".attention-inbox-trigger > span");
+    await expect(badge).toBeVisible();
+    const badgeColors = await badge.evaluate((element) => {
+      const styles = getComputedStyle(element);
+      const luminance = (color: string) => {
+        const values = (color.match(/[\d.]+/g) ?? [])
+          .slice(0, 3)
+          .map(Number)
+          .map((value) => {
+            const normalized = color.startsWith("color(") ? value : value / 255;
+            return normalized <= 0.04045
+              ? normalized / 12.92
+              : ((normalized + 0.055) / 1.055) ** 2.4;
+          });
+        return (
+          (values[0] ?? 0) * 0.2126 +
+          (values[1] ?? 0) * 0.7152 +
+          (values[2] ?? 0) * 0.0722
+        );
+      };
+      const [lighter, darker] = [
+        luminance(styles.color),
+        luminance(styles.backgroundColor),
+      ].sort((a, b) => b - a);
+      return {
+        token: styles.getPropertyValue("--amber-contrast").trim(),
+        contrast: ((lighter ?? 0) + 0.05) / ((darker ?? 0) + 0.05),
+      };
+    });
+    expect(badgeColors.token).toBe(
+      theme.startsWith("classic")
+        ? "#21201c"
+        : theme === "editorial-light"
+          ? "#fffdfa"
+          : "#11110f",
+    );
+    expect(badgeColors.contrast).toBeGreaterThanOrEqual(4.5);
     for (const selector of [
       '.workspace-item[data-active="true"]',
       '.agent-item[data-active="true"]',
@@ -1473,6 +1510,64 @@ test("terminal follows new output without interrupting scrollback", async ({
   await expect
     .poll(() => viewport.evaluate((element) => element.scrollTop))
     .toBe(0);
+});
+
+test("wide snapshot frames scroll together while prose stays inside the pane", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisual(page, "editorial-light");
+  const frame = page.getByRole("region", { name: "Terminal frame" });
+  await expect(frame).toHaveCount(1);
+  await expect(frame).toHaveCSS("white-space", "pre");
+  expect(
+    await frame.evaluate(
+      (element) => element.scrollWidth > element.clientWidth,
+    ),
+  ).toBe(true);
+
+  const rowPositions = () =>
+    frame.evaluate((element) => {
+      const text = element.firstChild;
+      if (!text || text.nodeType !== Node.TEXT_NODE)
+        throw new Error("Missing frame text");
+      let offset = 0;
+      return (text.textContent ?? "").split("\n").map((line) => {
+        const range = document.createRange();
+        range.setStart(text, offset);
+        range.setEnd(text, offset + 1);
+        offset += line.length + 1;
+        return range.getBoundingClientRect().left;
+      });
+    });
+  const before = await rowPositions();
+  expect(before).toHaveLength(3);
+  await frame.focus();
+  await expect(frame).toHaveCSS("outline-width", "2px");
+  await frame.press("ArrowRight");
+  await expect
+    .poll(() => frame.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(0);
+  const after = await rowPositions();
+  const displacement = (before[0] ?? 0) - (after[0] ?? 0);
+  expect(displacement).toBeGreaterThan(0);
+  for (let index = 0; index < before.length; index += 1) {
+    expect((before[index] ?? 0) - (after[index] ?? 0)).toBeCloseTo(
+      displacement,
+      1,
+    );
+  }
+  expect(
+    await page.locator(".terminal-lines").evaluate((element) => {
+      const viewport = element.closest(".terminal-viewport");
+      return (
+        viewport &&
+        element.getBoundingClientRect().right <=
+          viewport.getBoundingClientRect().right
+      );
+    }),
+  ).toBe(true);
+  expect(await hasNoPageOverflow(page)).toBe(true);
 });
 
 test("long mobile terminal output stays inside its scroll viewport", async ({
