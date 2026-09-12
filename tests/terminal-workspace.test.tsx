@@ -173,7 +173,9 @@ describe("TerminalWorkspace snapshot frames", () => {
     updated.panes[0].lines.push(...rows.slice(1));
     rerender(<Harness agent={structuredClone(updated)} />);
     const completed = screen.getAllByRole("region", { name: "Terminal frame" });
-    expect(completed).toEqual([first, second]);
+    expect(completed).toHaveLength(2);
+    expect(completed[0]).toBe(first);
+    expect(completed[1]).toBe(second);
     expect(first.textContent).toBe(rows.join("\n"));
     expect(second?.textContent).toBe(rows.join("\n"));
     expect(first.scrollLeft).toBe(20);
