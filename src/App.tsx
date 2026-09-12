@@ -1365,6 +1365,7 @@ export function App({
                 <span className="mobile-brand-mark">
                   <HerdrWebLogo compact />
                 </span>
+                <span className="topbar-eyebrow">Workbench</span>
                 <strong>{workspace?.name ?? "herdr-web"}</strong>
               </div>
 
@@ -1429,8 +1430,8 @@ export function App({
                 {workspace && (
                   <Button
                     type="button"
-                    variant="soft"
-                    color="gray"
+                    variant="solid"
+                    color="amber"
                     className="desktop-new-agent"
                     disabled={!canStartAgent}
                     onClick={() => openSessionDialog()}

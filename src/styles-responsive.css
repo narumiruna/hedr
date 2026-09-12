@@ -1,6 +1,16 @@
-@media (max-width: 1100px) {
-  .connection-state {
+@media (max-width: 1280px) {
+  .topbar-eyebrow {
     display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .connection-state,
+  .topbar-context > strong {
+    display: none;
+  }
+  .work-status-summary {
+    gap: 8px;
   }
 }
 
@@ -52,6 +62,13 @@
   .spaces-actions button {
     min-width: 44px;
     justify-content: center;
+  }
+  .workspace-item,
+  .worktree-item {
+    min-height: 44px;
+  }
+  .agent-panel {
+    min-height: 180px;
   }
   .agent-panel-heading {
     min-height: 52px;
@@ -158,8 +175,8 @@
     max-width: 75vw;
   }
   .terminal-shell {
-    min-height: 220px;
-    border-radius: 3px;
+    min-height: 0;
+    border-radius: 10px;
   }
   .reconnect-banner,
   .launch-notice {

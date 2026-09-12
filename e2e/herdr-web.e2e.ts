@@ -66,24 +66,26 @@ test("Editorial palette propagates into portalled Radix themes", async ({
   const expectedThemes = {
     light: {
       buttonBackground: "rgb(156, 61, 45)",
+      buttonText: "rgb(255, 253, 250)",
       selectedBackground: "rgb(245, 230, 225)",
       tokens: {
         "--amber-9": "#9c3d2d",
         "--blue-9": "#405779",
         "--grass-9": "#4c6540",
         "--red-9": "#8f3040",
-        "--radius-4": "4px",
+        "--radius-4": "8px",
       },
     },
     dark: {
       buttonBackground: "rgb(241, 154, 132)",
+      buttonText: "rgb(17, 17, 15)",
       selectedBackground: "rgb(56, 34, 29)",
       tokens: {
         "--amber-9": "#f19a84",
         "--blue-9": "#a9c2ec",
         "--grass-9": "#abc995",
         "--red-9": "#f29aa5",
-        "--radius-4": "4px",
+        "--radius-4": "8px",
       },
     },
   } as const;
@@ -121,6 +123,10 @@ test("Editorial palette propagates into portalled Radix themes", async ({
     await expect(settings.getByRole("button", { name: "Apply" })).toHaveCSS(
       "background-color",
       expectedThemes[appearance].buttonBackground,
+    );
+    await expect(settings.getByRole("button", { name: "Apply" })).toHaveCSS(
+      "color",
+      expectedThemes[appearance].buttonText,
     );
   }
 });
@@ -404,22 +410,34 @@ test("desktop workbench gives the terminal priority", async ({
           .backgroundColor,
       );
     return {
-      blockedStatus: pair(".status-blocked", ".status-blocked"),
+      blockedStatus: pair(
+        ".session-tab .status-blocked",
+        ".session-tab .status-blocked",
+      ),
+      compactStatus: pair(
+        '.agent-item[data-active="true"] .status-pill',
+        '.agent-item[data-active="true"]',
+      ),
+      primaryAction: pair(".desktop-new-agent", ".desktop-new-agent"),
       composerHint: pair(".composer-hint", ".message-composer"),
       needsInput: pair(".attention-banner", ".attention-banner"),
-      workingStatus: pair(".status-working", ".status-working"),
+      workingStatus: pair(
+        ".session-tab .status-working",
+        ".session-tab .status-working",
+      ),
       workspacePath: pair(".workspace-cwd", ".interactive-terminal-tools"),
     };
   });
-  for (const ratio of Object.values(contrastRatios)) {
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  for (const [name, ratio] of Object.entries(contrastRatios)) {
+    expect(ratio, name).toBeGreaterThanOrEqual(4.5);
   }
   await expect(page.getByText("agent runtime", { exact: true })).toHaveCount(0);
   await expect(page.getByText("herdr on GitHub", { exact: true })).toHaveCount(
     0,
   );
   await expect(page.getByText("Focused", { exact: true })).toHaveCount(0);
-  await expect(page.locator(".topbar-context > strong")).toBeHidden();
+  await expect(page.locator(".topbar-context > strong")).toHaveText("herdr");
+  await expect(page.locator(".topbar-context > strong")).toBeVisible();
 
   await page.screenshot({
     path: testInfo.outputPath("herdr-web-terminal-first-desktop.png"),
@@ -514,10 +532,10 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
       return {
         mappings: {
           blockedBackground:
-            rendered(".status-blocked").backgroundColor ===
+            rendered(".session-tab .status-blocked").backgroundColor ===
             normalize(value("--amber-3")),
           blockedText:
-            rendered(".status-blocked").color ===
+            rendered(".session-tab .status-blocked").color ===
             normalize(value("--amber-12")),
           controlBorder:
             rendered(".command-button").borderColor ===
@@ -686,6 +704,129 @@ test("classic dark visual baseline", async ({ page }) => {
     caret: "hide",
     fullPage: true,
     maxDiffPixels: CROSS_PLATFORM_RENDERING_DIFF_PIXELS,
+  });
+});
+
+test("compact Agent statuses leave names and metadata unobstructed", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepareVisual(page, "editorial-light");
+
+  const rows = await page.locator(".agent-item").evaluateAll((items) =>
+    items.map((item) => {
+      const icon = item.querySelector('.status-pill[data-compact="true"]');
+      const copy = item.querySelector(".agent-item-copy");
+      const title = item.querySelector("strong");
+      const meta = item.querySelector(".agent-item-meta");
+      if (!icon || !copy || !title || !meta)
+        throw new Error("Missing Agent metadata");
+      return {
+        iconRight: icon.getBoundingClientRect().right,
+        copyLeft: copy.getBoundingClientRect().left,
+        titleBottom: title.getBoundingClientRect().bottom,
+        metaTop: meta.getBoundingClientRect().top,
+        titleClipped: title.scrollWidth > title.clientWidth,
+      };
+    }),
+  );
+  expect(rows).toHaveLength(5);
+  for (const row of rows) {
+    expect(row.iconRight).toBeLessThanOrEqual(row.copyLeft);
+    expect(row.titleBottom).toBeLessThanOrEqual(row.metaTop);
+    expect(row.titleClipped).toBe(false);
+  }
+});
+
+for (const theme of [
+  "editorial-light",
+  "editorial-dark",
+  "classic-light",
+  "classic-dark",
+] as const) {
+  test(`${theme} surfaces fit short mobile and compact desktop viewports`, async ({
+    page,
+  }) => {
+    await prepareVisual(page, theme);
+    for (const viewport of [
+      { width: 320, height: 500 },
+      { width: 900, height: 700 },
+    ]) {
+      await page.setViewportSize(viewport);
+      const composer = page.getByRole("textbox", {
+        name: "Message api-review",
+      });
+      await composer.fill("Review the changes\nand explain the tradeoffs.");
+      await expect(composer).toBeVisible();
+      expect(await hasNoPageOverflow(page)).toBe(true);
+      const bounds = await page.evaluate(() => {
+        const rect = (selector: string) => {
+          const element = document.querySelector(selector);
+          if (!element) throw new Error(`Missing ${selector}`);
+          const box = element.getBoundingClientRect();
+          return {
+            left: box.left,
+            right: box.right,
+            bottom: box.bottom,
+            height: box.height,
+          };
+        };
+        return {
+          attach: rect(".composer-attach"),
+          input: rect(".message-composer textarea"),
+          send: rect('[aria-label="Send message"]'),
+          terminal: rect(".terminal-viewport"),
+          lines: rect(".terminal-lines"),
+          composer: rect(".message-composer"),
+          actions: rect(".topbar-actions"),
+          fontSize: Number.parseFloat(
+            getComputedStyle(
+              document.querySelector(".message-composer textarea") as Element,
+            ).fontSize,
+          ),
+        };
+      });
+      expect(bounds.attach.right).toBeLessThanOrEqual(bounds.input.left);
+      expect(bounds.input.right).toBeLessThanOrEqual(bounds.send.left);
+      expect(bounds.composer.bottom).toBeLessThanOrEqual(viewport.height);
+      expect(bounds.terminal.height).toBeGreaterThan(100);
+      expect(bounds.lines.right).toBeLessThanOrEqual(bounds.terminal.right);
+      expect(bounds.actions.right).toBeLessThanOrEqual(viewport.width);
+      if (viewport.width === 320) {
+        expect(bounds.fontSize).toBeGreaterThanOrEqual(16);
+      }
+    }
+  });
+}
+
+test("mobile drawers fit the viewport below their headings", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisual(page, "editorial-dark");
+  await page.screenshot({
+    path: testInfo.outputPath("editorial-mobile-dark.png"),
+  });
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const navigation = page.getByRole("dialog", { name: "Navigate workbench" });
+  await expect(navigation).toBeVisible();
+  const navigationBounds = await navigation.boundingBox();
+  const sidebarBounds = await navigation.locator(".sidebar").boundingBox();
+  expect(navigationBounds).not.toBeNull();
+  expect(sidebarBounds).not.toBeNull();
+  expect(
+    (sidebarBounds?.y ?? 0) + (sidebarBounds?.height ?? 0),
+  ).toBeLessThanOrEqual(
+    (navigationBounds?.y ?? 0) + (navigationBounds?.height ?? 0),
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("editorial-mobile-navigation.png"),
+  });
+  await navigation.getByRole("button", { name: "Open menu" }).click();
+  await page.getByRole("menuitem", { name: "Settings" }).click();
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("editorial-mobile-settings.png"),
   });
 });
 
@@ -1080,6 +1221,15 @@ test("mobile Settings keeps terminal text presets inside the viewport", async ({
   expect(bounds?.x ?? -1).toBeGreaterThanOrEqual(0);
   expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(320);
   expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(500);
+  const privacy = settings.getByRole("combobox", {
+    name: /Lock-screen detail/,
+  });
+  await privacy.scrollIntoViewIfNeeded();
+  const privacyBounds = await privacy.boundingBox();
+  expect(privacyBounds?.x ?? -1).toBeGreaterThanOrEqual(bounds?.x ?? 0);
+  expect(
+    (privacyBounds?.x ?? 0) + (privacyBounds?.width ?? 0),
+  ).toBeLessThanOrEqual((bounds?.x ?? 0) + (bounds?.width ?? 0));
   const apply = settings.getByRole("button", { name: "Apply" });
   await apply.scrollIntoViewIfNeeded();
   await expect(apply).toBeVisible();

@@ -1,14 +1,14 @@
 /* Compact global header */
 .topbar {
   display: flex;
-  min-height: 52px;
+  min-height: 56px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--panel-raised) 96%, transparent);
+  background: var(--canvas);
 }
 .topbar-context {
   display: flex;
@@ -16,8 +16,20 @@
   align-items: center;
   gap: 10px;
 }
+.topbar-eyebrow {
+  color: var(--ink-muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.topbar-eyebrow::after {
+  margin-left: 12px;
+  color: var(--border-strong);
+  content: "/";
+}
 .topbar-context strong {
-  display: none;
+  display: block;
   overflow: hidden;
   font-size: 14px;
   text-overflow: ellipsis;
@@ -40,7 +52,7 @@
   min-width: 0;
   max-width: min(46vw, 420px);
   align-items: center;
-  gap: 5px;
+  gap: 12px;
   overflow: hidden;
   color: var(--ink-muted);
   font-size: 10px;
@@ -50,20 +62,23 @@
   display: inline-flex;
   min-height: 24px;
   align-items: center;
-  padding: 0 7px;
-  border-radius: 2px;
-  background: var(--panel-muted);
+  gap: 5px;
+}
+.work-status-summary span::before {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
 }
 .work-status-summary [data-kind="needs-input"] {
-  background: var(--amber-3);
   color: var(--amber-12);
 }
 .work-status-summary [data-kind="working"] {
-  background: var(--blue-3);
   color: var(--blue-12);
 }
 .work-status-summary [data-kind="completed"] {
-  background: var(--grass-3);
   color: var(--grass-12);
 }
 .command-button {
@@ -73,14 +88,15 @@
   gap: 8px;
   padding: 0 7px 0 10px;
   border: 1px solid var(--border-strong);
-  border-radius: 2px;
+  border-radius: 7px;
   background: var(--panel-raised);
   color: var(--ink-secondary);
-  box-shadow: none;
+  box-shadow: var(--shadow-small);
   cursor: pointer;
 }
 .command-button:hover {
   border-color: var(--border-strong);
+  background: var(--panel-muted);
   color: var(--ink);
 }
 .command-button span {
@@ -98,7 +114,7 @@ kbd {
   background: var(--panel-muted);
   color: var(--ink-muted);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 8px;
+  font-size: 9px;
 }
 .connection-state {
   display: grid;
@@ -194,8 +210,8 @@ kbd {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px 16px 14px;
+  gap: 12px;
+  padding: 14px 18px 18px;
   overflow: hidden;
 }
 .terminal-toolbar-context {
@@ -286,13 +302,13 @@ kbd {
   min-height: 48px;
   flex: 0 0 auto;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border: 1px solid var(--amber-7);
-  border-radius: 2px;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--amber-6);
+  border-radius: 8px;
   background: var(--amber-2);
   color: var(--amber-12);
-  box-shadow: inset 3px 0 0 var(--amber-9);
+  box-shadow: inset 2px 0 0 var(--amber-9);
 }
 .attention-banner > svg {
   flex: 0 0 auto;
@@ -301,10 +317,11 @@ kbd {
   display: flex;
   min-width: 0;
   flex-direction: column;
+  gap: 3px;
 }
 .attention-banner strong {
   color: var(--ink);
-  font-size: 11px;
+  font-size: 12px;
 }
 .attention-banner span {
   overflow: hidden;
