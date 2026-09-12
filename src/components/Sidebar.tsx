@@ -6,6 +6,7 @@ import {
   DashboardIcon,
   ExclamationTriangleIcon,
   GearIcon,
+  HamburgerMenuIcon,
   KeyboardIcon,
   Link2Icon,
   PlusIcon,
@@ -207,7 +208,13 @@ export function Sidebar({
         )}
         <span className="workspace-copy">
           <strong>{label}</strong>
-          {detail && <small>{detail}</small>}
+          {detail && (
+            <small
+              data-attention={Boolean(workspaceAttentionDetail(workspace))}
+            >
+              {detail}
+            </small>
+          )}
         </span>
         <ChevronRightIcon className="workspace-chevron" aria-hidden="true" />
       </button>
@@ -313,6 +320,7 @@ export function Sidebar({
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               <button ref={menuTrigger} type="button" aria-label="Open menu">
+                <HamburgerMenuIcon aria-hidden="true" />
                 Menu
               </button>
             </DropdownMenu.Trigger>
@@ -430,12 +438,14 @@ export function Sidebar({
                       <StatusPill status={agent.status} compact />
                       <span className="agent-item-copy">
                         <strong>{agent.label}</strong>
-                        <small>{workspace?.name ?? "Unknown Space"}</small>
-                      </span>
-                      <span
-                        className={`agent-item-state agent-state-${agent.status}`}
-                      >
-                        {agentStatusLabel(agent.status)}
+                        <span className="agent-item-meta">
+                          <small>{workspace?.name ?? "Unknown Space"}</small>
+                          <span
+                            className={`agent-item-state agent-state-${agent.status}`}
+                          >
+                            {agentStatusLabel(agent.status)}
+                          </span>
+                        </span>
                       </span>
                     </button>
                   );

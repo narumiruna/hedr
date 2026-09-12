@@ -91,6 +91,8 @@
   }
   .message-composer {
     min-height: 62px;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 4px;
     padding: 8px;
   }
   .message-composer .rt-Button {
@@ -107,10 +109,11 @@
   }
   .message-composer textarea {
     min-height: 44px;
-    font-size: 11px;
+    font-size: 16px;
   }
   .composer-hint {
     grid-column: 1 / -1;
+    justify-content: flex-end;
   }
   .composer-hint span:first-child {
     display: none;

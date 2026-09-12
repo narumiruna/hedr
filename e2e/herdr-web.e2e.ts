@@ -66,24 +66,26 @@ test("Editorial palette propagates into portalled Radix themes", async ({
   const expectedThemes = {
     light: {
       buttonBackground: "rgb(156, 61, 45)",
-      selectedBackground: "rgb(245, 230, 225)",
+      buttonText: "rgb(255, 253, 250)",
+      selectedBorder: "rgb(170, 80, 61)",
       tokens: {
         "--amber-9": "#9c3d2d",
         "--blue-9": "#405779",
         "--grass-9": "#4c6540",
         "--red-9": "#8f3040",
-        "--radius-4": "4px",
+        "--radius-4": "8px",
       },
     },
     dark: {
       buttonBackground: "rgb(241, 154, 132)",
-      selectedBackground: "rgb(56, 34, 29)",
+      buttonText: "rgb(17, 17, 15)",
+      selectedBorder: "rgb(210, 126, 104)",
       tokens: {
         "--amber-9": "#f19a84",
         "--blue-9": "#a9c2ec",
         "--grass-9": "#abc995",
         "--red-9": "#f29aa5",
-        "--radius-4": "4px",
+        "--radius-4": "8px",
       },
     },
   } as const;
@@ -116,11 +118,20 @@ test("Editorial palette propagates into portalled Radix themes", async ({
     );
     await expect(selectedTheme).toHaveCSS(
       "background-color",
-      expectedThemes[appearance].selectedBackground,
+      "rgba(0, 0, 0, 0)",
+    );
+    await expect(selectedTheme).toHaveCSS("box-shadow", "none");
+    await expect(selectedTheme).toHaveCSS(
+      "border-color",
+      expectedThemes[appearance].selectedBorder,
     );
     await expect(settings.getByRole("button", { name: "Apply" })).toHaveCSS(
       "background-color",
       expectedThemes[appearance].buttonBackground,
+    );
+    await expect(settings.getByRole("button", { name: "Apply" })).toHaveCSS(
+      "color",
+      expectedThemes[appearance].buttonText,
     );
   }
 });
@@ -242,8 +253,20 @@ test("Classic themes retain accessible controls, focus, and dialogs", async ({
         border: contrast(styles.borderColor, styles.backgroundColor),
         focus: contrast(styles.outlineColor, styles.backgroundColor),
         outlineStyle: styles.outlineStyle,
+        tabIndicator: contrast(
+          getComputedStyle(
+            document.querySelector(
+              '.session-tab[data-state="active"]',
+            ) as Element,
+          ).borderBottomColor,
+          getComputedStyle(document.querySelector(".session-tabs") as Element)
+            .backgroundColor,
+        ),
       };
     });
+    expect(ratios.tabIndicator, `${theme} selected tab`).toBeGreaterThanOrEqual(
+      3,
+    );
     expect(ratios.border, `${theme} control border`).toBeGreaterThanOrEqual(3);
     expect(ratios.focus, `${theme} focus`).toBeGreaterThanOrEqual(3);
     expect(ratios.outlineStyle).toBe("solid");
@@ -404,22 +427,37 @@ test("desktop workbench gives the terminal priority", async ({
           .backgroundColor,
       );
     return {
-      blockedStatus: pair(".status-blocked", ".status-blocked"),
+      blockedStatus: pair(".session-tab .status-blocked", ".session-tabs"),
+      compactStatus: pair(
+        '.agent-item[data-active="true"] .status-pill',
+        '.agent-item[data-active="true"]',
+      ),
+      tabIndicator: ratio(
+        getComputedStyle(
+          document.querySelector(
+            '.session-tab[data-state="active"]',
+          ) as Element,
+        ).borderBottomColor,
+        getComputedStyle(document.querySelector(".session-tabs") as Element)
+          .backgroundColor,
+      ),
+      primaryAction: pair(".desktop-new-agent", ".desktop-new-agent"),
       composerHint: pair(".composer-hint", ".message-composer"),
       needsInput: pair(".attention-banner", ".attention-banner"),
-      workingStatus: pair(".status-working", ".status-working"),
+      workingStatus: pair(".session-tab .status-working", ".session-tabs"),
       workspacePath: pair(".workspace-cwd", ".interactive-terminal-tools"),
     };
   });
-  for (const ratio of Object.values(contrastRatios)) {
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  for (const [name, ratio] of Object.entries(contrastRatios)) {
+    expect(ratio, name).toBeGreaterThanOrEqual(4.5);
   }
   await expect(page.getByText("agent runtime", { exact: true })).toHaveCount(0);
   await expect(page.getByText("herdr on GitHub", { exact: true })).toHaveCount(
     0,
   );
   await expect(page.getByText("Focused", { exact: true })).toHaveCount(0);
-  await expect(page.locator(".topbar-context > strong")).toBeHidden();
+  await expect(page.locator(".topbar-context > strong")).toHaveText("herdr");
+  await expect(page.locator(".topbar-context > strong")).toBeVisible();
 
   await page.screenshot({
     path: testInfo.outputPath("herdr-web-terminal-first-desktop.png"),
@@ -513,11 +551,11 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
         getComputedStyle(document.querySelector(selector) as Element);
       return {
         mappings: {
-          blockedBackground:
-            rendered(".status-blocked").backgroundColor ===
-            normalize(value("--amber-3")),
+          unfilledTabStatus:
+            rendered(".session-tab .status-blocked").backgroundColor ===
+            "rgba(0, 0, 0, 0)",
           blockedText:
-            rendered(".status-blocked").color ===
+            rendered(".session-tab .status-blocked").color ===
             normalize(value("--amber-12")),
           controlBorder:
             rendered(".command-button").borderColor ===
@@ -533,6 +571,7 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
           focus: contrast("--focus", "--paper"),
           indigo: contrast("--indigo", "--indigo-fill"),
           moss: contrast("--moss", "--moss-fill"),
+          tabIndicator: contrast("--amber-11", "--paper"),
           secondaryInk: contrast("--secondary-ink", "--paper"),
           sumi: contrast("--sumi", "--paper"),
           vermilion: contrast("--vermilion", "--vermilion-fill"),
@@ -541,7 +580,7 @@ test("semantic editorial colors and focus meet contrast thresholds", async ({
     });
 
     expect(audit.mappings).toEqual({
-      blockedBackground: true,
+      unfilledTabStatus: true,
       blockedText: true,
       controlBorder: true,
       doneText: true,
@@ -634,6 +673,17 @@ async function prepareVisual(page: Page, theme: VisualTheme) {
   });
 }
 
+test.afterEach(async ({ page }, testInfo) => {
+  if (!testInfo.title.endsWith("visual baseline")) return;
+  // Keep native renders for review even when a stale image passes the tolerance.
+  await page.screenshot({
+    path: testInfo.outputPath("current-visual-baseline.png"),
+    animations: "disabled",
+    caret: "hide",
+    fullPage: true,
+  });
+});
+
 test("desktop light visual baseline", async ({ page }) => {
   await page.setViewportSize({ width: 1536, height: 960 });
   await prepareVisual(page, "editorial-light");
@@ -686,6 +736,202 @@ test("classic dark visual baseline", async ({ page }) => {
     caret: "hide",
     fullPage: true,
     maxDiffPixels: CROSS_PLATFORM_RENDERING_DIFF_PIXELS,
+  });
+});
+
+test("compact Agent statuses leave names and metadata unobstructed", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepareVisual(page, "editorial-light");
+
+  const rows = await page.locator(".agent-item").evaluateAll((items) =>
+    items.map((item) => {
+      const icon = item.querySelector('.status-pill[data-compact="true"]');
+      const copy = item.querySelector(".agent-item-copy");
+      const title = item.querySelector("strong");
+      const meta = item.querySelector(".agent-item-meta");
+      if (!icon || !copy || !title || !meta)
+        throw new Error("Missing Agent metadata");
+      return {
+        iconRight: icon.getBoundingClientRect().right,
+        copyLeft: copy.getBoundingClientRect().left,
+        titleBottom: title.getBoundingClientRect().bottom,
+        metaTop: meta.getBoundingClientRect().top,
+        titleClipped: title.scrollWidth > title.clientWidth,
+      };
+    }),
+  );
+  expect(rows).toHaveLength(5);
+  for (const row of rows) {
+    expect(row.iconRight).toBeLessThanOrEqual(row.copyLeft);
+    expect(row.titleBottom).toBeLessThanOrEqual(row.metaTop);
+    expect(row.titleClipped).toBe(false);
+  }
+});
+
+for (const theme of [
+  "editorial-light",
+  "editorial-dark",
+  "classic-light",
+  "classic-dark",
+] as const) {
+  test(`${theme} surfaces fit short mobile and compact desktop viewports`, async ({
+    page,
+  }) => {
+    await prepareVisual(page, theme);
+    const badge = page.locator(".attention-inbox-trigger > span");
+    await expect(badge).toBeVisible();
+    const badgeColors = await badge.evaluate((element) => {
+      const styles = getComputedStyle(element);
+      const luminance = (color: string) => {
+        const values = (color.match(/[\d.]+/g) ?? [])
+          .slice(0, 3)
+          .map(Number)
+          .map((value) => {
+            const normalized = color.startsWith("color(") ? value : value / 255;
+            return normalized <= 0.04045
+              ? normalized / 12.92
+              : ((normalized + 0.055) / 1.055) ** 2.4;
+          });
+        return (
+          (values[0] ?? 0) * 0.2126 +
+          (values[1] ?? 0) * 0.7152 +
+          (values[2] ?? 0) * 0.0722
+        );
+      };
+      const [lighter, darker] = [
+        luminance(styles.color),
+        luminance(styles.backgroundColor),
+      ].sort((a, b) => b - a);
+      return {
+        token: styles.getPropertyValue("--amber-contrast").trim(),
+        contrast: ((lighter ?? 0) + 0.05) / ((darker ?? 0) + 0.05),
+      };
+    });
+    expect(badgeColors.token).toBe(
+      theme.startsWith("classic")
+        ? "#21201c"
+        : theme === "editorial-light"
+          ? "#fffdfa"
+          : "#11110f",
+    );
+    expect(badgeColors.contrast).toBeGreaterThanOrEqual(4.5);
+    for (const selector of [
+      '.workspace-item[data-active="true"]',
+      '.agent-item[data-active="true"]',
+      '.attention-item[data-active="true"]',
+      '.session-tab[data-state="active"]',
+      ".workspace-glyph",
+      ".command-button",
+      ".attention-banner",
+      ".terminal-shell",
+      ".message-composer",
+    ]) {
+      await expect(page.locator(selector).first()).toHaveCSS(
+        "box-shadow",
+        "none",
+      );
+    }
+    const selectedTab = page.getByRole("tab", { selected: true });
+    await expect(selectedTab).toHaveCSS("border-bottom-width", "2px");
+    await expect(selectedTab).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    expect(
+      await selectedTab.evaluate(
+        (element) => getComputedStyle(element).borderBottomColor,
+      ),
+    ).not.toBe("rgba(0, 0, 0, 0)");
+    await expect(page.locator(".message-composer")).toHaveCSS(
+      "border-radius",
+      "0px",
+    );
+    for (const viewport of [
+      { width: 320, height: 500 },
+      { width: 900, height: 700 },
+    ]) {
+      await page.setViewportSize(viewport);
+      const composer = page.getByRole("textbox", {
+        name: "Message api-review",
+      });
+      await composer.fill("Review the changes\nand explain the tradeoffs.");
+      await expect(composer).toBeVisible();
+      await expect(page.locator(".message-composer")).toHaveCSS(
+        "outline-width",
+        "2px",
+      );
+      await expect(page.locator(".message-composer")).toHaveCSS(
+        "outline-style",
+        "solid",
+      );
+      expect(await hasNoPageOverflow(page)).toBe(true);
+      const bounds = await page.evaluate(() => {
+        const rect = (selector: string) => {
+          const element = document.querySelector(selector);
+          if (!element) throw new Error(`Missing ${selector}`);
+          const box = element.getBoundingClientRect();
+          return {
+            left: box.left,
+            right: box.right,
+            bottom: box.bottom,
+            height: box.height,
+          };
+        };
+        return {
+          attach: rect(".composer-attach"),
+          input: rect(".message-composer textarea"),
+          send: rect('[aria-label="Send message"]'),
+          terminal: rect(".terminal-viewport"),
+          lines: rect(".terminal-lines"),
+          composer: rect(".message-composer"),
+          actions: rect(".topbar-actions"),
+          fontSize: Number.parseFloat(
+            getComputedStyle(
+              document.querySelector(".message-composer textarea") as Element,
+            ).fontSize,
+          ),
+        };
+      });
+      expect(bounds.attach.right).toBeLessThanOrEqual(bounds.input.left);
+      expect(bounds.input.right).toBeLessThanOrEqual(bounds.send.left);
+      expect(bounds.composer.bottom).toBeLessThanOrEqual(viewport.height);
+      expect(bounds.terminal.height).toBeGreaterThan(100);
+      expect(bounds.lines.right).toBeLessThanOrEqual(bounds.terminal.right);
+      expect(bounds.actions.right).toBeLessThanOrEqual(viewport.width);
+      if (viewport.width === 320) {
+        expect(bounds.fontSize).toBeGreaterThanOrEqual(16);
+      }
+    }
+  });
+}
+
+test("mobile drawers fit the viewport below their headings", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisual(page, "editorial-dark");
+  await page.screenshot({
+    path: testInfo.outputPath("editorial-mobile-dark.png"),
+  });
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const navigation = page.getByRole("dialog", { name: "Navigate workbench" });
+  await expect(navigation).toBeVisible();
+  const navigationBounds = await navigation.boundingBox();
+  const sidebarBounds = await navigation.locator(".sidebar").boundingBox();
+  expect(navigationBounds).not.toBeNull();
+  expect(sidebarBounds).not.toBeNull();
+  expect(
+    (sidebarBounds?.y ?? 0) + (sidebarBounds?.height ?? 0),
+  ).toBeLessThanOrEqual(
+    (navigationBounds?.y ?? 0) + (navigationBounds?.height ?? 0),
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("editorial-mobile-navigation.png"),
+  });
+  await navigation.getByRole("button", { name: "Open menu" }).click();
+  await page.getByRole("menuitem", { name: "Settings" }).click();
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("editorial-mobile-settings.png"),
   });
 });
 
@@ -1080,6 +1326,15 @@ test("mobile Settings keeps terminal text presets inside the viewport", async ({
   expect(bounds?.x ?? -1).toBeGreaterThanOrEqual(0);
   expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(320);
   expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(500);
+  const privacy = settings.getByRole("combobox", {
+    name: /Lock-screen detail/,
+  });
+  await privacy.scrollIntoViewIfNeeded();
+  const privacyBounds = await privacy.boundingBox();
+  expect(privacyBounds?.x ?? -1).toBeGreaterThanOrEqual(bounds?.x ?? 0);
+  expect(
+    (privacyBounds?.x ?? 0) + (privacyBounds?.width ?? 0),
+  ).toBeLessThanOrEqual((bounds?.x ?? 0) + (bounds?.width ?? 0));
   const apply = settings.getByRole("button", { name: "Apply" });
   await apply.scrollIntoViewIfNeeded();
   await expect(apply).toBeVisible();
@@ -1266,6 +1521,64 @@ test("terminal follows new output without interrupting scrollback", async ({
   await expect
     .poll(() => viewport.evaluate((element) => element.scrollTop))
     .toBe(0);
+});
+
+test("wide snapshot frames scroll together while prose stays inside the pane", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepareVisual(page, "editorial-light");
+  const frame = page.getByRole("region", { name: "Terminal frame" });
+  await expect(frame).toHaveCount(1);
+  await expect(frame).toHaveCSS("white-space", "pre");
+  expect(
+    await frame.evaluate(
+      (element) => element.scrollWidth > element.clientWidth,
+    ),
+  ).toBe(true);
+
+  const rowPositions = () =>
+    frame.evaluate((element) => {
+      const text = element.firstChild;
+      if (!text || text.nodeType !== Node.TEXT_NODE)
+        throw new Error("Missing frame text");
+      let offset = 0;
+      return (text.textContent ?? "").split("\n").map((line) => {
+        const range = document.createRange();
+        range.setStart(text, offset);
+        range.setEnd(text, offset + 1);
+        offset += line.length + 1;
+        return range.getBoundingClientRect().left;
+      });
+    });
+  const before = await rowPositions();
+  expect(before).toHaveLength(3);
+  await frame.focus();
+  await expect(frame).toHaveCSS("outline-width", "2px");
+  await frame.press("ArrowRight");
+  await expect
+    .poll(() => frame.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(0);
+  const after = await rowPositions();
+  const displacement = (before[0] ?? 0) - (after[0] ?? 0);
+  expect(displacement).toBeGreaterThan(0);
+  for (let index = 0; index < before.length; index += 1) {
+    expect((before[index] ?? 0) - (after[index] ?? 0)).toBeCloseTo(
+      displacement,
+      1,
+    );
+  }
+  expect(
+    await page.locator(".terminal-lines").evaluate((element) => {
+      const viewport = element.closest(".terminal-viewport");
+      return (
+        viewport &&
+        element.getBoundingClientRect().right <=
+          viewport.getBoundingClientRect().right
+      );
+    }),
+  ).toBe(true);
+  expect(await hasNoPageOverflow(page)).toBe(true);
 });
 
 test("long mobile terminal output stays inside its scroll viewport", async ({

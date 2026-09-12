@@ -366,7 +366,10 @@ npx playwright install chromium
 GitHub Actions runs `.github/workflows/ci.yml` for pull requests, pushes to `main`, and manual dispatches.
 
 CI runs formatting and lint checks, all unit and integration tests, both production builds, and Chromium browser tests on Linux.
+A macOS 15 job runs the browser suite against native Darwin visual baselines and retains browser failure evidence as an Actions artifact for seven days.
 A Windows job also builds the application and verifies native npm startup, named-pipe metadata, and Windows path contracts.
+
+Visual baselines are platform-specific. After intentional UI changes, run `npm run test:e2e -- --grep 'visual baseline' --update-snapshots=all` on both Linux and macOS, inspect all five images per platform, then rerun the browser suite without snapshot updates. CI checks committed expectations and never automatically accepts replacements.
 
 Add a repository Actions secret named `PAT_TOKEN` before running release automation.
 

@@ -159,11 +159,24 @@ function movePaneTab(event: KeyboardEvent<HTMLButtonElement>) {
 
 function terminalLineEntries(lines: string[]) {
   const occurrences = new Map<string, number>();
-  return lines.map((line) => {
+  const entries: Array<{ key: string; line: string; className: string }> = [];
+  for (const line of lines) {
     const occurrence = (occurrences.get(line) ?? 0) + 1;
     occurrences.set(line, occurrence);
-    return { key: `${line}-${occurrence}`, line };
-  });
+    const className = lineClass(line);
+    const previous = entries.at(-1);
+    if (
+      className === "terminal-frame" &&
+      previous?.className === className &&
+      !line.startsWith("╭")
+    ) {
+      // Each opening border starts a frame; appended rows keep its scroll key.
+      previous.line += `\n${line}`;
+    } else {
+      entries.push({ key: `${line}-${occurrence}`, line, className });
+    }
+  }
+  return entries;
 }
 
 interface TerminalPaneViewProps {
@@ -282,18 +295,30 @@ function TerminalPaneView({
             ) : pane.lines.length === 0 ? (
               <p className="terminal-empty">No terminal output yet.</p>
             ) : (
-              terminalLineEntries(pane.lines).map(({ key, line }) => (
-                <div className={lineClass(line)} key={`${pane.id}-${key}`}>
-                  {line.startsWith("● ") ? (
-                    <>
-                      <span aria-hidden="true">● </span>
-                      {line.slice(2)}
-                    </>
-                  ) : (
-                    line || "\u00a0"
-                  )}
-                </div>
-              ))
+              terminalLineEntries(pane.lines).map(({ key, line, className }) =>
+                className === "terminal-frame" ? (
+                  <section
+                    className={className}
+                    key={`${pane.id}-${key}`}
+                    aria-label="Terminal frame"
+                    // biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable frames need keyboard access to clipped columns.
+                    tabIndex={0}
+                  >
+                    {line}
+                  </section>
+                ) : (
+                  <div className={className} key={`${pane.id}-${key}`}>
+                    {line.startsWith("● ") ? (
+                      <>
+                        <span aria-hidden="true">● </span>
+                        {line.slice(2)}
+                      </>
+                    ) : (
+                      line || "\u00a0"
+                    )}
+                  </div>
+                ),
+              )
             )}
           </div>
         </ScrollArea.Viewport>

@@ -38,7 +38,7 @@ export function StatusPill({ status, compact = false }: StatusPillProps) {
             : CircleIcon;
 
   return (
-    <span className={`status-pill status-${status}`}>
+    <span className={`status-pill status-${status}`} data-compact={compact}>
       <Icon aria-hidden="true" />
       {!compact && STATUS_LABEL[status]}
       <span className="sr-only">{compact ? STATUS_LABEL[status] : ""}</span>

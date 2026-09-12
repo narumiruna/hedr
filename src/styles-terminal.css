@@ -57,7 +57,7 @@
   height: 28px;
   padding: 0;
   border: 0;
-  border-radius: 2px;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -343,10 +343,13 @@
   gap: 7px;
   align-items: center;
   min-height: 50px;
-  padding: 7px 8px;
+  padding: 10px;
   border-top: 1px solid var(--terminal-border);
-  background: var(--terminal-panel);
-  transition: box-shadow 120ms ease;
+  background: var(--terminal);
+}
+.message-composer:focus-within {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
 }
 .message-composer[data-dragging="true"] {
   box-shadow: inset 0 0 0 2px var(--amber-8);
@@ -372,7 +375,7 @@
 .composer-attach {
   width: 32px;
   height: 32px;
-  border-radius: 2px;
+  border-radius: 6px;
 }
 .composer-attach:hover,
 .composer-attachment button:hover {
@@ -400,7 +403,7 @@
   align-items: center;
   padding: 7px;
   border: 1px solid var(--terminal-border);
-  border-radius: 2px;
+  border-radius: 8px;
   background: var(--terminal-elevated);
 }
 .composer-attachment img,
@@ -490,7 +493,7 @@
   background: transparent;
   color: var(--terminal-text);
   font-family: "JetBrainsMono Nerd Font Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 24px;
 }
 .message-composer textarea::placeholder {

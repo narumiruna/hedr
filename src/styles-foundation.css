@@ -38,10 +38,9 @@
   --terminal: var(--raised-paper);
   --terminal-panel: #f0ece4;
   --terminal-elevated: #e7e1d7;
-  --terminal-border: var(--control-border);
+  --terminal-border: var(--fine-rule);
   --terminal-text: var(--sumi);
   --terminal-muted: var(--secondary-ink);
-  --terminal-shadow: 0 8px 22px rgb(38 35 31 / 6%);
   --brand-cutout: var(--canvas);
   --focus-ring: var(--focus);
   --shadow-small: 0 1px 1px rgb(38 35 31 / 8%);
@@ -60,6 +59,7 @@
   --amber-7: #b96d5a;
   --amber-8: #aa503d;
   --amber-9: var(--vermilion);
+  --amber-contrast: var(--raised-paper);
   --amber-10: #8d3527;
   --amber-11: #843124;
   --amber-12: #70291f;
@@ -118,14 +118,13 @@
   --terminal: var(--paper);
   --terminal-panel: #191916;
   --terminal-elevated: #262520;
-  --terminal-border: var(--control-border);
+  --terminal-border: var(--fine-rule);
   --terminal-text: var(--sumi);
   --terminal-muted: var(--secondary-ink);
   --brand-cutout: var(--canvas);
   --focus-ring: var(--focus);
   --shadow-small: 0 1px 1px rgb(0 0 0 / 34%);
   --shadow-dialog: 0 24px 72px rgb(0 0 0 / 45%);
-  --terminal-shadow: 0 8px 24px rgb(0 0 0 / 22%);
   --sand-4: #292824;
   --sand-7: var(--control-border);
   --sand-8: #827b70;
@@ -140,6 +139,7 @@
   --amber-7: #a8614f;
   --amber-8: #d27e68;
   --amber-9: var(--vermilion);
+  --amber-contrast: var(--paper);
   --amber-10: #f3a28e;
   --amber-11: #f6ab98;
   --amber-12: #ffc4b5;
@@ -210,12 +210,12 @@ select:focus-visible,
 
 .herdr-web-theme.theme-editorial,
 .theme-editorial .radix-themes {
-  --radius-1: 1px;
-  --radius-2: 2px;
-  --radius-3: 3px;
-  --radius-4: 4px;
-  --radius-5: 5px;
-  --radius-6: 6px;
+  --radius-1: 3px;
+  --radius-2: 5px;
+  --radius-3: 7px;
+  --radius-4: 8px;
+  --radius-5: 10px;
+  --radius-6: 12px;
 }
 
 .session-tabs [role="tab"]:focus-visible,
