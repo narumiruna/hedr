@@ -14,5 +14,5 @@ e2e
 .env
 .env.*
 !.env.example
-MEMORY.md
+AGENTS.md
 README.md
