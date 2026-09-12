@@ -5,6 +5,7 @@ import { dirname } from "node:path";
 export const WORKFLOW_RUNTIMES = [
   "Claude Code",
   "Codex",
+  "Muse",
   "OpenCode",
   "Pi",
   "Qwen Code",

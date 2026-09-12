@@ -3,6 +3,7 @@ import type { RuntimeName } from "./state";
 export const RUNTIME_COMMAND: Record<RuntimeName, string> = {
   "Claude Code": "claude",
   Codex: "codex --full-auto",
+  Muse: "muse",
   OpenCode: "opencode",
   Pi: "pi",
   "Qwen Code": "qwen",

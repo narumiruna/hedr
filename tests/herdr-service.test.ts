@@ -589,6 +589,36 @@ branch refs/heads/narumi/feat/tree
     }
   });
 
+  test("launches Muse through Herdr's newly supported Agent kind", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce({
+        root_pane: { pane_id: "w5:pm" },
+        tab: { tab_id: "w5:tm" },
+        type: "tab_created",
+      })
+      .mockResolvedValueOnce({ type: "agent_started" })
+      .mockResolvedValueOnce({
+        agent: { agent: "muse", interactive_ready: true },
+        type: "agent_info",
+      });
+    const service = new LiveHerdrService({ request } as unknown as HerdrClient);
+
+    await service.createSession({
+      command: "muse",
+      label: "muse-review",
+      runtime: "Muse",
+      workspaceId: "w5",
+    });
+
+    expect(request).toHaveBeenNthCalledWith(
+      2,
+      "agent.start",
+      expect.objectContaining({ args: [], kind: "muse", name: "muse-review" }),
+      { timeoutMs: 65_000 },
+    );
+  });
+
   test("launches Qwen Code through Herdr's ready Agent workflow", async () => {
     const request = vi
       .fn()

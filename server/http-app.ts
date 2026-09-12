@@ -22,6 +22,7 @@ import {
   validateImage,
   validateImageUploadId,
 } from "./image-upload.js";
+import type { SavedMachineService } from "./machine-service.js";
 import type {
   BrowserPushSubscription,
   PushNotificationService,
@@ -84,6 +85,7 @@ export interface HerdrService {
 }
 
 interface HandlerOptions {
+  machineService?: SavedMachineService;
   service: HerdrService;
   terminalConfigured?: boolean;
   pushNotifications?: PushNotificationService;
@@ -132,6 +134,28 @@ function sendJson(
     "x-content-type-options": "nosniff",
   });
   response.end(body);
+}
+
+function stateWithBridgeCapabilities(
+  state: unknown,
+  role: "controller" | "viewer",
+  machineSupervision: boolean,
+): unknown {
+  if (!state || typeof state !== "object" || Array.isArray(state)) return state;
+  const record = state as Record<string, unknown>;
+  const capabilities = record.capabilities;
+  return {
+    ...record,
+    access: { role },
+    capabilities: {
+      ...(capabilities &&
+      typeof capabilities === "object" &&
+      !Array.isArray(capabilities)
+        ? capabilities
+        : {}),
+      machineSupervision: role === "controller" && machineSupervision,
+    },
+  };
 }
 
 function tokenMatches(supplied: string, expected: string): boolean {
@@ -545,6 +569,7 @@ function errorResponse(response: ServerResponse, error: unknown): void {
 // persistence, projection, uploads, and terminal streaming remain separate owners.
 export function createHerdrHttpHandler({
   service,
+  machineService,
   pushNotifications,
   shareStore,
   terminalConfigured = false,
@@ -722,9 +747,7 @@ export function createHerdrHttpHandler({
         sendJson(
           response,
           200,
-          state && typeof state === "object" && !Array.isArray(state)
-            ? { ...state, access: { role } }
-            : state,
+          stateWithBridgeCapabilities(state, role, Boolean(machineService)),
         );
         return;
       }
@@ -925,6 +948,33 @@ export function createHerdrHttpHandler({
         }
         terminalTickets?.revokeShare(id);
         sendJson(response, 200, { id, type: "viewer_share_revoked" });
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/herdr/machines") {
+        if (role !== "controller") {
+          sendJson(response, 403, {
+            error: {
+              code: "read_only_access",
+              message:
+                "Saved SSH machine supervision requires controller access",
+            },
+          });
+          return;
+        }
+        if (!machineService) {
+          sendJson(response, 404, {
+            error: {
+              code: "machine_api_unavailable",
+              message: "Saved SSH machine supervision is unavailable",
+            },
+          });
+          return;
+        }
+        sendJson(
+          response,
+          200,
+          await machineService.list(url.searchParams.get("refresh") === "1"),
+        );
         return;
       }
       if (role === "viewer") {

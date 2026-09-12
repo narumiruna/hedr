@@ -12,6 +12,7 @@ It keeps herdr's core job visible: find the Agent that needs input, control its 
 - Service-worker-backed Needs input, Failed, and Done notifications with optional sound, per-Agent mute, cooldown, durable deduplication, privacy controls, and exact Space, Agent, and pane deep links.
 - An Action Palette for navigation, approved pane and Agent actions, terminal search and takeover, appearance and text size, Herdr reload, and confirmed declared plugin actions.
 - Mission Control for optional cross-Space supervision with real status, terminal previews, attention age, connection role, and direct Agent navigation.
+- Controller-only supervision of saved SSH machines with bounded remote Space, Agent, and Needs input summaries, isolated offline states, and no exposed SSH targets.
 - Browser-local and project-scoped workflow templates for ordered batches of approved Agent runtimes, initial prompts, working directories, and explicit launch barriers without autonomous Agent collaboration.
 - Short-lived, revocable, read-only viewer links scoped to one Space, Agent, or pane, with state projection and observation-ticket enforcement.
 - Interactive xterm.js terminals backed by Herdr 0.8 terminal control and observation sessions.
@@ -22,7 +23,7 @@ It keeps herdr's core job visible: find the Agent that needs input, control its 
 - Remote image paste, drag/drop, and file selection with host-readable Agent attachment paths.
 - Herdr-aligned **Split right** and **Split down** pane actions, mouse and keyboard split resizing, and confirmed pane closing.
 - A mouse and keyboard resizable desktop navigation rail with a browser-saved width.
-- New Claude Code, Codex, OpenCode, Pi, and Qwen Code Agents with visible, fixed approved commands.
+- New Claude Code, Codex, Muse, OpenCode, Pi, and Qwen Code Agents with visible, fixed approved commands.
 - A controller-only Herdr runtime center for plugin state, declared actions, recent logs, and official integration install or uninstall operations.
 - Browser tab titles that surface global Needs input counts and the selected Space and Agent.
 - A keyboard-navigable `⌘K` or `Ctrl+K` palette for jumping between workspaces, Agents, and Terminals.
@@ -50,6 +51,7 @@ The front end intentionally uses every requested Radix family.
 
 - Node.js 22 or newer.
 - Herdr 0.8 or newer installed and running with `herdr terminal session control` and `observe` support.
+- Herdr 0.9 or newer for saved SSH machine profiles. Remote Mission Control summaries require local bridge mode and a current Herdr build that supports `herdr --machine <id> api snapshot`; the Docker/TCP bridge cannot read the host machine catalog.
 - `just` for the optional convenience and Docker commands.
 - Docker when using the container workflow.
 
@@ -166,7 +168,8 @@ Use **New** below Spaces to preview and create a persistent Herdr workspace for 
 
 Use **Menu → Settings** to choose Editorial Light, Editorial Dark, Classic Light, or Classic Dark, adjust terminal text size, configure notifications, choose explicit accessibility preferences, request a foreground wake lock, or install the PWA when the browser supports installation.
 Use **Attention Inbox** to triage real Needs input, Failed, and Recently done Agent states without leaving the selected terminal.
-Use **Mission Control** for an optional cross-Space overview; it does not replace the terminal-first workbench.
+Use **Mission Control** for an optional cross-Space overview and controller-only health summaries from saved SSH machines; it does not replace the terminal-first workbench.
+Remote summaries keep each machine's IDs isolated, omit SSH targets, and fail independently. Herdr does not forward interactive terminal sessions through `--machine`, so open the native Herdr client to control a remote terminal.
 Use **Workflow templates** to save browser-local or centrally stored project-scoped launch batches whose commands remain fixed to approved runtimes.
 Use **Viewer shares** as a controller to create a one-time secret link with an exact scope and expiry, inspect issued links, and revoke active access.
 Use **Menu** for the workbench keybinding reference, the controller-only **Herdr runtime** center, and an explicit Herdr reload.
@@ -203,7 +206,7 @@ Standalone Terminals support the same interactive session when Herdr terminal st
 
 If terminal streaming is unavailable, herdr-web keeps the bounded snapshot view and Agent composer as an explicit compatibility fallback.
 
-Use **New agent** to review and launch one of the five approved runtime presets, including Qwen Code.
+Use **New agent** to review and launch one of the six approved runtime presets, including Muse and Qwen Code.
 
 Agent launch continues as a visible background action so closing its setup dialog never pretends to cancel server work.
 
@@ -401,7 +404,9 @@ If a bump reports that its version commit succeeded but tag creation failed, cre
 
 `server/http-app.ts` validates controller or viewer authentication, request sizes, resource IDs, and action payloads before invoking Herdr.
 
-`src/live-state.ts` maps Herdr protocol 19 and 20 snapshots into the workbench model in `src/state.ts`, grouping split panes under their detected Agent while retaining shell-only tabs as standalone Terminals.
+`src/live-state.ts` maps Herdr protocol 19 through 22 snapshots into the workbench model in `src/state.ts`, grouping split panes under their detected Agent while retaining shell-only tabs as standalone Terminals.
+
+`server/machine-service.ts` reads saved machine profiles without retaining SSH targets and uses Herdr's machine-routed snapshot command for bounded, independently failing Mission Control summaries.
 
 `src/use-herdr-runtime.ts` consumes the structural event stream, separates rejected mutations from unknown outcomes, refreshes after accepted actions, and preserves the last valid snapshot during transient failures.
 

@@ -4,8 +4,10 @@ import {
   ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
+import type { SavedMachineListResult } from "../herdr-api";
 import type { Agent, HerdrState } from "../state";
 import type { AccessRole, RuntimeConnection } from "../use-herdr-runtime";
+import { MachineFleet } from "./MachineFleet";
 import { RadixDialog } from "./RadixDialog";
 import { StatusPill } from "./StatusPill";
 
@@ -13,6 +15,7 @@ interface MissionControlProps {
   accessRole: AccessRole;
   attentionStartedAt: Record<string, number>;
   connection: RuntimeConnection;
+  loadMachines?: (forceRefresh?: boolean) => Promise<SavedMachineListResult>;
   open: boolean;
   state: HerdrState;
   onOpenAgent: (agentId: string, paneId: string) => void;
@@ -38,6 +41,7 @@ export function MissionControl({
   accessRole,
   attentionStartedAt,
   connection,
+  loadMachines,
   open,
   state,
   onOpenAgent,
@@ -147,6 +151,7 @@ export function MissionControl({
           );
         })}
       </div>
+      {loadMachines && <MachineFleet load={loadMachines} open={open} />}
     </RadixDialog>
   );
 }

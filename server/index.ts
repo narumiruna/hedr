@@ -9,6 +9,7 @@ import {
   statusSocketPath,
 } from "./herdr-status.js";
 import { createHerdrHttpHandler } from "./http-app.js";
+import { SavedMachineService } from "./machine-service.js";
 import { PushNotificationService } from "./push-notifications.js";
 import { ViewerShareStore } from "./share-store.js";
 import { createStaticHandler } from "./static-files.js";
@@ -103,6 +104,9 @@ const workflowTemplates = new WorkflowTemplateStore(
   join(dataHome, "runtime", "workflow-templates.json"),
 );
 const api = createHerdrHttpHandler({
+  machineService: usesSocketProxy
+    ? undefined
+    : new SavedMachineService(herdrCommand),
   pushNotifications,
   service,
   shareStore,

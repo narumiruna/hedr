@@ -82,6 +82,7 @@ export interface LiveSnapshotPayload {
     };
   };
   capabilities?: {
+    machineSupervision?: boolean;
     previewsTruncated?: boolean;
     statusSubscriptionsTruncated?: boolean;
     terminalReason?: string;
@@ -351,6 +352,7 @@ export function mapLiveSnapshot(payload: LiveSnapshotPayload): HerdrState {
     agents,
     capabilities: {
       herdrVersion: snapshot.version,
+      machineSupervision: payload.capabilities?.machineSupervision === true,
       previewsTruncated: payload.capabilities?.previewsTruncated === true,
       protocol: snapshot.protocol,
       statusSubscriptionsTruncated:

@@ -162,6 +162,7 @@ const RUNTIMES: Record<
     command: "codex --full-auto",
     kind: "codex",
   },
+  Muse: { args: [], command: "muse", kind: "muse" },
   OpenCode: { args: [], command: "opencode", kind: "opencode" },
   Pi: { args: [], command: "pi", kind: "pi" },
   "Qwen Code": { args: [], command: "qwen", kind: "qwen" },

@@ -9,6 +9,7 @@ export type AgentStatus =
 export type RuntimeName =
   | "Claude Code"
   | "Codex"
+  | "Muse"
   | "OpenCode"
   | "Pi"
   | "Qwen Code";
@@ -100,6 +101,7 @@ export interface Activity {
 export interface HerdrState {
   capabilities: {
     herdrVersion: string;
+    machineSupervision: boolean;
     previewsTruncated: boolean;
     protocol: number;
     statusSubscriptionsTruncated: boolean;
@@ -621,6 +623,7 @@ export function createDemoState(): HerdrState {
   return {
     capabilities: {
       herdrVersion: "demo",
+      machineSupervision: false,
       previewsTruncated: false,
       protocol: 20,
       statusSubscriptionsTruncated: false,
