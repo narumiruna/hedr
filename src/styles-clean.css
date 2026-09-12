@@ -183,6 +183,18 @@
   );
 }
 :is(.theme-mist, .theme-sage, .theme-linen)
+  .terminal-search
+  :is(input, button):focus-visible {
+  border-color: var(--clean-accent);
+  box-shadow: 0 0 0 1px var(--clean-accent);
+}
+:is(.theme-mist, .theme-sage, .theme-linen)
+  .terminal-prompt-form
+  textarea:focus-visible {
+  border-color: var(--clean-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--clean-accent) 35%, transparent);
+}
+:is(.theme-mist, .theme-sage, .theme-linen)
   .workflow-layout
   > aside
   > button[data-active="true"] {
@@ -194,7 +206,8 @@
   label[data-selected="true"] {
   border-color: var(--clean-accent);
 }
-:is(.theme-mist, .theme-sage, .theme-linen) .theme-options input[type="radio"] {
+:is(.theme-mist, .theme-sage, .theme-linen)
+  :is(.theme-options input[type="radio"], .settings-toggle-options input) {
   accent-color: var(--clean-accent);
 }
 :is(.theme-mist, .theme-sage, .theme-linen) .terminal-shell {
