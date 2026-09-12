@@ -1,130 +1,84 @@
 # herdr-web
 
-herdr-web is a responsive browser workbench for [herdr](https://github.com/herdrdev/herdr), the persistent runtime for coding-agent terminals.
+herdr-web is a responsive browser workbench for [Herdr](https://github.com/herdrdev/herdr), the persistent runtime for coding-agent terminals.
 
-It keeps herdr's core job visible: find the Agent that needs input, control its live terminal, and send a real prompt without hunting through sessions.
+It keeps the terminal at the center of the workflow: find the Agent that needs attention, open its live terminal, and respond from desktop or mobile without hunting through sessions.
 
-## Features
+## Highlights
 
-- Terminal-dominant desktop, tablet, and mobile layouts with one persistent navigation rail on wide screens.
-- A workspace tab bar that preserves Herdr tab order across detected Agents and standalone Terminals.
-- A global Attention Inbox with real terminal previews, Needs input, Failed, and Recently done groups, quick replies, snooze, per-Agent mute, review state, and keyboard triage.
-- Service-worker-backed Needs input, Failed, and Done notifications with optional sound, per-Agent mute, cooldown, durable deduplication, privacy controls, and exact Space, Agent, and pane deep links.
-- An Action Palette for navigation, approved pane and Agent actions, terminal search and takeover, appearance and text size, Herdr reload, and confirmed declared plugin actions.
-- Mission Control for optional cross-Space supervision with real status, terminal previews, attention age, connection role, and direct Agent navigation.
-- Controller-only supervision of saved SSH machines with bounded remote Space, Agent, and Needs input summaries, isolated offline states, and no exposed SSH targets.
-- Browser-local and project-scoped workflow templates for ordered batches of approved Agent runtimes, initial prompts, working directories, and explicit launch barriers without autonomous Agent collaboration.
-- Short-lived, revocable, read-only viewer links scoped to one Space, Agent, or pane, with state projection and observation-ticket enforcement.
-- Interactive xterm.js terminals backed by Herdr 0.8 terminal control and observation sessions.
-- Exact terminal input, ANSI output, resize, mouse, IME, Unicode, and alternate-screen behavior without snapshot polling.
-- Structural workspace, tab, pane, layout, and Agent updates from Herdr event subscriptions.
-- Real prompts submitted through Herdr's `agent.prompt` API from an optional terminal-side dialog.
-- Per-Agent in-memory text and image drafts that survive empty workspaces, navigation, and failed sends.
-- Remote image paste, drag/drop, and file selection with host-readable Agent attachment paths.
-- Herdr-aligned **Split right** and **Split down** pane actions, mouse and keyboard split resizing, and confirmed pane closing.
-- A mouse and keyboard resizable desktop navigation rail with a browser-saved width.
-- New Claude Code, Codex, Muse, OpenCode, Pi, and Qwen Code Agents with visible, fixed approved commands.
-- A controller-only Herdr runtime center for plugin state, declared actions, recent logs, and official integration install or uninstall operations.
-- Browser tab titles that surface global Needs input counts and the selected Space and Agent.
-- A keyboard-navigable `⌘K` or `Ctrl+K` palette for jumping between workspaces, Agents, and Terminals.
-- On-demand session details without synthetic activity or unsupported runtime metadata.
-- Last-valid-snapshot recovery with snapshot age, safe disabled actions, and per-pane read recovery.
-- Ten saved themes: clean Mist, Sage, and Linen palettes join Editorial and Classic, each with Light and Dark variants and palette previews in Settings.
-- Interactive terminals retain their independent high-contrast dark palette across every theme for reliable ANSI and TUI readability.
-- Bundled JetBrainsMono Nerd Font Mono (Nerd Fonts v3.5.1) for terminal text and icons, Unicode 11 cell widths, optional WebGL acceleration, and a safe built-in renderer fallback. Font source and licenses: [`public/fonts/README.md`](public/fonts/README.md).
-- Browser-saved Compact, Default, and Comfortable terminal text sizes with focused-terminal zoom shortcuts.
-- Explicit screen-reader terminal and reduced-motion modes, plus keyboard-only workbench and terminal-adjacent controls.
-- A redacted terminal diagnostics panel for measured WebSocket bridge round trip, output delivery, reconnect count, renderer, dimensions, Unicode, Herdr protocol, and actual control or observation mode.
-- An installable online-only PWA shell with authenticated Web Push for closed-app attention, notification clicks, connection visibility, and an optional foreground screen wake lock.
-- Controller and optional independent viewer tokens, same-origin WebSockets, and short-lived one-use terminal tickets.
+- **Terminal-first workbench:** interactive xterm.js terminals with exact input, ANSI output, resize, mouse, IME, Unicode 11 widths, alternate-screen support, search, and optional WebGL rendering.
+- **Herdr-native organization:** Spaces, tabs, split panes, detected Agents, and standalone Terminals retain Herdr's structure and tab order.
+- **Attention management:** global Needs input, Failed, and Recently done groups with previews, quick replies, snooze, mute, review state, keyboard triage, and optional notifications.
+- **Safe remote control:** explicit control, read-only observation, or takeover; short-lived one-use terminal tickets; and scoped, revocable viewer links.
+- **Agent workflows:** launch approved Agent runtimes, submit semantic prompts, preserve per-Agent drafts during navigation, and run ordered workflow templates.
+- **Cross-Space supervision:** Mission Control summarizes local Spaces and, with a compatible Herdr installation, saved SSH machines.
+- **Responsive and accessible:** desktop, tablet, and mobile layouts; keyboard navigation; reduced motion; screen-reader terminal mode; and browser-saved themes and text sizes.
+- **Resilient state:** structural event subscriptions, bounded consistency refreshes, last-valid-snapshot recovery, and isolated pane-read failures.
 
-## Radix UI
-
-The front end intentionally uses every requested Radix family.
-
-- **Colors:** semantic Sand, Amber, Blue, Grass, and Red scales from `@radix-ui/colors`.
-- **Icons:** interface symbols from `@radix-ui/react-icons`.
-- **Themes:** buttons, badges, fields, icon buttons, and the appearance provider from `@radix-ui/themes`.
-- **Primitives:** Dialog, Scroll Area, Tabs, and Tooltip primitives.
+Supported Agent presets are Claude Code, Codex, Muse, OpenCode, Pi, and Qwen Code.
 
 ## Requirements
 
 - Node.js 22 or newer.
-- Herdr 0.8 or newer installed and running with `herdr terminal session control` and `observe` support.
-- Herdr 0.9 or newer for saved SSH machine profiles. Remote Mission Control summaries require local bridge mode and a current Herdr build that supports `herdr --machine <id> api snapshot`; the Docker/TCP bridge cannot read the host machine catalog.
-- `just` for the optional convenience and Docker commands.
-- Docker when using the container workflow.
+- Herdr 0.8 or newer, installed and running with `herdr terminal session control` and `observe` support.
+- Herdr 0.9 or newer for saved SSH machine profiles.
+- [`just`](https://github.com/casey/just) for convenience commands and the Docker workflow.
+- Docker only when using the container workflow.
 
-Check the local herdr server before starting the web app:
+Confirm that the local Herdr server is available:
 
 ```sh
 herdr status server
 ```
 
-## Project-directory CLI
+## Quick start
 
-Install the published command from the public npm registry:
+Install the published CLI:
 
 ```sh
 npm install --global herdr-web
 ```
 
-To link the command from this checkout instead:
-
-```sh
-just install-cli
-```
-
-Update the global npm installation to the latest published release:
-
-```sh
-herdr-web update
-```
-
-This runs `npm install --global herdr-web@latest`; it does not update Herdr. npm may require the same permissions used for the original global installation. When the command is linked from a development checkout, updating replaces that link with the published package.
-
-Start the web workbench without opening the shell's current directory:
+Start the workbench:
 
 ```sh
 herdr-web
 ```
 
-Open the current directory or an explicit project directory only when requested:
+To focus an existing Herdr workspace or create one for a project directory, pass that directory explicitly:
 
 ```sh
 herdr-web .
 herdr-web /path/to/project
 ```
 
-With a directory, the command resolves it, focuses an existing Herdr workspace that already contains it or creates a new workspace, and then starts the authenticated web workflow directly through Node.js.
+The command starts an authenticated local web workflow and prints its URL. Without a directory, it does not focus or create a workspace. Press `Ctrl+C` to stop it.
 
-Without a directory, the command starts that web workflow without focusing or creating a workspace.
+Useful CLI commands:
 
-Run `herdr-web --help` for usage, including the `update` command, and press `Ctrl+C` to stop the development web processes.
+```sh
+herdr-web --help
+herdr-web update
+```
 
-The command does not require `just`.
-Directory-opening mode also invokes `herdr`, while a linked development command depends on this checkout and its installed npm dependencies.
-On Windows, the bridge discovers Herdr's named pipe from `herdr status --json` unless `HERDR_SOCKET_PATH` is set explicitly.
+`herdr-web update` installs the latest published herdr-web package; it does not update Herdr. If the command was linked from a development checkout, updating replaces that link with the published package.
 
-## Run locally
+On Windows, herdr-web discovers Herdr's named pipe through `herdr status --json` unless `HERDR_SOCKET_PATH` is set.
 
-Install dependencies once:
+## Run from source
+
+Install dependencies and start Vite with the authenticated bridge:
 
 ```sh
 just install
-```
-
-Start Vite and the authenticated herdr-web bridge:
-
-```sh
 just run
 ```
 
-`just run` chooses available web and bridge ports, creates an access token, and prints local and LAN URLs containing that token.
+To link the `herdr-web` CLI from this checkout, run `just install-cli`.
 
-Open the printed `network` URL from another device on the same trusted network.
+`just run` selects available ports, creates an access token, and prints local and LAN URLs. Open the `network` URL from another device only on a trusted network.
 
-For a stable controller token, optional independent viewer token, or a named-session socket:
+To use stable credentials or a named Herdr socket:
 
 ```sh
 HERDR_WEB_TOKEN=my-long-random-controller-token \
@@ -133,13 +87,79 @@ HERDR_SOCKET_PATH="$HOME/.config/herdr/sessions/work/herdr.sock" \
 just run
 ```
 
-When updating from an earlier checkout, rename product-owned token, view-token, port, and host-identity variables to the documented `HERDR_WEB_*` form; upstream Herdr variables remain `HERDR_*`.
+The CLI does not require `just`. To run the development processes manually, set a token explicitly:
 
-Saved appearance, terminal text size, Agent ordering, sidebar width, and session token values migrate to `herdr-web-*` browser keys on first use.
+```sh
+npm install
+HERDR_WEB_TOKEN=my-long-random-token npm run dev
+```
 
-## Data directory
+Vite prints the network URL. If the URL does not contain the token, the page asks for it.
 
-herdr-web stores new file data under one product-owned directory:
+## Workbench guide
+
+### Navigate and supervise
+
+The navigation rail lists **Spaces** and a global **Agents** panel. The tab bar shows each detected Agent and each tab without an Agent as a standalone Terminal.
+
+- Use **Grouped** to retain Space and tab order, or **Priority** to surface blocked and newly completed Agents.
+- Use **Attention Inbox** to triage Needs input, Failed, and Recently done states without leaving the selected terminal.
+- Use **Mission Control** for a cross-Space overview and controller-only summaries from saved SSH machines.
+- Use **Workflow templates** for browser-local or project-scoped batches of approved Agent launches.
+- Use **Viewer shares** to issue and revoke expiring read-only links to one Space, Agent, or pane.
+- Use `Cmd+K` or `Ctrl+K` to open the Action Palette.
+- Use **Menu** for Settings, keybindings, Herdr reload, and the controller-only plugin and integration runtime center.
+
+Remote machine summaries keep machine IDs isolated, omit SSH targets, and fail independently. They require local bridge mode and a Herdr build that supports `herdr --machine <id> api snapshot`; the Docker/TCP bridge cannot read the host machine catalog. Herdr does not forward interactive terminal sessions through `--machine`, so use the native Herdr client to control remote terminals.
+
+### Work with terminals and Agents
+
+Typing, paste, mouse input, terminal applications, and resize are forwarded through a dedicated WebSocket to one Herdr terminal session. A controller conflict offers explicit read-only observation or takeover instead of silently stealing control.
+
+The terminal toolbar provides output search, redacted transport diagnostics, image-path staging, and an optional **Prompt Agent** dialog. Use that dialog only when you want Herdr's semantic `agent.prompt` action instead of terminal input.
+
+Use the tab-strip **+** button to launch an approved Agent in the current Space. Launch continues as a visible background action if its setup dialog closes.
+
+Use **Split right** or **Split down** to create panes. Dividers support mouse and keyboard resizing, and closing a pane requires confirmation. herdr-web sends Herdr's native split directions and persists ratios through `layout.set_split_ratio`.
+
+Per-Agent text and image drafts survive in-app navigation and clear only after Herdr accepts the prompt. Drafts remain in memory and do not survive a page reload. If delivery cannot be confirmed, inspect the terminal before choosing **Send again** because the original prompt may already have arrived.
+
+If terminal streaming is unavailable, herdr-web exposes a bounded snapshot and Agent composer as an explicit compatibility fallback.
+
+### Keyboard controls
+
+| Action | Shortcut |
+| --- | --- |
+| Open Action Palette | `Cmd+K` or `Ctrl+K` |
+| Search terminal output | `Cmd+Shift+F` or `Ctrl+Shift+F` |
+| Copy terminal selection | `Cmd+C` on macOS; `Ctrl+Shift+C` elsewhere |
+| Paste text or stage a clipboard image | `Cmd+V` on macOS; `Ctrl+V` on Windows and Linux |
+| Increase or decrease focused terminal text | `Cmd/Ctrl` + `+` or `Cmd/Ctrl` + `-` |
+| Restore terminal text to 13 px | `Cmd/Ctrl` + `0` |
+| Move in Attention Inbox | `J`/`N` for next; `K`/`P` for previous |
+| Reply in Attention Inbox | `R`; Enter sends and advances |
+
+Mobile layouts include an **Esc**, **Ctrl**, and **Tab** row for soft keyboards that do not expose terminal modifiers.
+
+## Image uploads
+
+Paste, drag, or select PNG, JPEG, GIF, or WebP images. Interactive-terminal batches accept up to eight images at 8 MiB each.
+
+The bridge verifies each signature and writes a random file under `$HOME/.herdr-web/uploads/` by default. herdr-web uploads up to three images concurrently, then inserts shell-escaped absolute paths in the original order without pressing Enter.
+
+Transient failures retry up to twice with the same upload ID. If only part of a batch fails, successful paths remain available and retry uploads only unfinished images. Cancelling does not delete files that already reached the Herdr host.
+
+Remove attachments manually when no Agent needs them:
+
+```sh
+find "$HOME/.herdr-web/uploads" -type f -delete
+```
+
+Uploads from earlier versions stay in their original project directories and are never moved or deleted automatically.
+
+## Data and configuration
+
+herdr-web stores product-owned files under:
 
 ```text
 $HOME/.herdr-web/
@@ -150,156 +170,25 @@ $HOME/.herdr-web/
     └── workflow-templates.json
 ```
 
-Set the absolute `HERDR_WEB_HOME` path to override this location.
+Set an absolute `HERDR_WEB_HOME` to move this directory.
 
-Uploads from earlier versions remain in their original project directories and are never moved or deleted automatically.
+Common environment variables:
 
-Herdr continues to own `$HOME/.config/herdr/`, its socket, API, and `HERDR_*` variables; herdr-web does not change them.
-
-Without `just`, set a token explicitly before running the development processes manually:
-
-```sh
-HERDR_WEB_TOKEN=my-long-random-token npm run dev
-```
-
-Vite prints the network URL, and the page asks for the token when it is not included in the URL.
-
-## Workbench workflow
-
-Needs input lists blocked Agents across every workspace and identifies each Agent's workspace.
-
-The sidebar follows Herdr's layout with **Spaces** above a global **Agents** panel, while the tab bar shows each Agent or standalone Terminal in Herdr tab order.
-
-Use **Grouped** to keep Agents in Space and tab order, or **Priority** to surface blocked and newly completed Agents first; the choice is saved in this browser.
-
-Use **New** below Spaces to preview and create a persistent Herdr workspace for a host directory.
-
-Use **Menu → Settings** to choose a theme, adjust terminal text size, configure notifications, choose explicit accessibility preferences, request a foreground wake lock, or install the PWA when the browser supports installation.
-
-Each theme has Light and Dark variants:
-
-| Theme | Appearance |
+| Variable | Purpose |
 | --- | --- |
-| Mist | Cool slate surfaces with quiet blue accents. |
-| Sage | Fresh gray-green surfaces with muted green accents. |
-| Linen | Soft ivory or warm charcoal with taupe accents. |
-| Editorial | Warm paper and subdued sumi tones with editorial typography. |
-| Classic | The original Sand and Amber workbench. |
+| `HERDR_WEB_TOKEN` | Required controller credential. |
+| `HERDR_WEB_VIEW_TOKEN` | Optional independent, global read-only credential. |
+| `HERDR_WEB_HOME` | Product data directory; defaults to `$HOME/.herdr-web`. |
+| `HERDR_SOCKET_PATH` | Herdr-owned Unix socket or Windows named-pipe override. |
+| `HERDR_WEB_VAPID_CONTACT` | Optional `mailto:` or HTTPS contact for generated Web Push identity. |
+| `HERDR_WEB_PORT` | Fixed host port for `just up`. |
+| `HERDR_PROJECTS_ROOT` | Narrowest common host directory containing Docker-accessible projects. |
 
-Mist, Sage, and Linen use sans-serif headings, flat surfaces, thin borders, and restrained accents; status colors remain amber for Needs input, blue for Working, green for Done, and red for failures.
-Palette swatches preview each option without changing the workbench until **Apply**; **Cancel** discards the selection.
-The choice is saved in this browser, and the appearance toggle switches Light/Dark without changing the theme family.
-Editorial Dark remains the default, and existing saved theme and appearance preferences are preserved.
-Workbench chrome and snapshot output follow the selected palette; interactive terminals keep their independent high-contrast ANSI palette.
+Herdr continues to own `$HOME/.config/herdr/`, its socket, API, and `HERDR_*` settings. herdr-web does not edit Herdr configuration, plugin registries, or Agent integration files directly.
 
-Use **Attention Inbox** to triage real Needs input, Failed, and Recently done Agent states without leaving the selected terminal.
-Use **Mission Control** for an optional cross-Space overview and controller-only health summaries from saved SSH machines; it does not replace the terminal-first workbench.
-Remote summaries keep each machine's IDs isolated, omit SSH targets, and fail independently. Herdr does not forward interactive terminal sessions through `--machine`, so open the native Herdr client to control a remote terminal.
-Use **Workflow templates** to save browser-local or centrally stored project-scoped launch batches whose commands remain fixed to approved runtimes.
-Use **Viewer shares** as a controller to create a one-time secret link with an exact scope and expiry, inspect issued links, and revoke active access.
-Use **Menu** for the workbench keybinding reference, the controller-only **Herdr runtime** center, and an explicit Herdr reload.
-The runtime center lists installed plugins, enables or disables them, confirms declared plugin actions before execution, shows recent command logs, and installs or uninstalls allowlisted official Agent integrations through Herdr.
-Herdr does not expose typed integration status through the socket API, so **Install / repair** is intentionally idempotent and the interface does not fabricate installed state.
+Browser preferences and session values use `herdr-web-*` keys. Compatible values from earlier releases migrate on first use.
 
-Returning to a Space restores its last selected tab, while choosing a Needs input or Agents item opens that exact Agent.
-
-Use the **+** beside the tab strip to start another Agent in the current Space without leaving the terminal context.
-
-Use **Split right** for side-by-side panes or **Split down** for stacked panes; herdr-web forwards the same `right` or `down` direction used by Herdr's `pane.split` API.
-
-Split panes stay inside their parent tab, follow that Herdr direction on wide screens, and use a readable pane selector on narrow screens.
-
-Drag the divider between two visible panes to preview a new ratio, then release it to persist the ratio atomically through Herdr's `layout.set_split_ratio` API.
-
-The pane divider also supports arrow keys plus Home and End, while controller loss or a rejected update restores the last confirmed Herdr ratio.
-
-Drag the desktop navigation divider or focus it and use Left, Right, Home, or End to adjust its width; this browser-only preference does not alter Herdr.
-
-Each Agent tab keeps its status visible, while one compact terminal bar combines the current working directory, branch, pane title, connection state, and terminal actions without redundant title rows.
-
-The focused terminal owns the remaining screen and is the primary interaction surface.
-
-Typing, paste, mouse input, terminal applications, and resize are forwarded through a dedicated WebSocket to one Herdr terminal session.
-
-The terminal waits for its bundled fonts before the authoritative fit, uses Unicode 11 widths, and prefers WebGL while automatically retaining the built-in renderer when WebGL is unavailable or loses context.
-
-Use the terminal toolbar to search output, inspect redacted transport diagnostics, stage image or file paths, or open the optional Agent prompt dialog.
-
-A controller conflict offers explicit read-only observation or takeover instead of silently stealing control.
-
-Standalone Terminals support the same interactive session when Herdr terminal streaming is available.
-
-If terminal streaming is unavailable, herdr-web keeps the bounded snapshot view and Agent composer as an explicit compatibility fallback.
-
-Use **New agent** to review and launch one of the six approved runtime presets, including Muse and Qwen Code.
-
-Agent launch continues as a visible background action so closing its setup dialog never pretends to cancel server work.
-
-Use the details button for real workspace, runtime, connection, and focused-pane information.
-
-Closing a split pane requires confirmation, while cancelling leaves the pane unchanged.
-
-Text and image drafts are kept separately per Agent during in-app navigation and clear only after Herdr accepts the prompt.
-
-If delivery cannot be confirmed, inspect the terminal before choosing **Send again** because the original prompt may already have arrived.
-
-Drafts remain intentionally in memory and do not survive a page reload.
-
-Herdr structural events refresh the control plane, with a 30-second consistency refresh and temporary 1.5-second fallback only while the event stream is unavailable.
-
-If control-plane refresh temporarily fails after a successful connection, the workbench keeps the live terminal session and last valid workspace snapshot visible, shows its age, disables mutations, and offers **Retry now**.
-
-If an individual pane read fails, other panes remain usable and the failed pane offers **Retry output**.
-
-On mobile, **New**, **Menu**, Spaces, and Agents remain available in the navigation drawer, while session details stay in **More actions** so navigation, search, and terminal work remain reachable at 320px.
-
-## Terminal controls
-
-- Type normally to send exact terminal input.
-- Use `Cmd+C` on macOS or `Ctrl+Shift+C` elsewhere to copy a terminal selection.
-- Use `Cmd+V` on macOS or `Ctrl+V` on Windows and Linux for normal text paste or to stage a clipboard image.
-- Use `Cmd+Shift+F` or `Ctrl+Shift+F` to search terminal output.
-- Use `Cmd+K` or `Ctrl+K` to open the Action Palette.
-- In Attention Inbox, use `J` or `N` for next, `K` or `P` for previous, `R` to reply, and Enter to send and advance.
-- Use `Cmd/Ctrl` + `+` or `Cmd/Ctrl` + `-` while the terminal is focused to adjust text size, and use `Cmd/Ctrl` + `0` to restore 13 px.
-- Choose Compact, Default, or Comfortable under **Menu → Settings**; the selected size is saved only in this browser.
-- Use the image toolbar button to stage a local image.
-- Use the mobile **Esc**, **Ctrl**, and **Tab** key row when the soft keyboard does not expose terminal modifiers.
-- Use **Prompt Agent** when you intentionally want Herdr's semantic `agent.prompt` action instead of terminal input.
-
-## Send remote images
-
-Focus the interactive terminal, then paste images with `Cmd+V` on macOS or `Ctrl+V` on Windows and Linux; the image button is the fallback.
-
-Each batch accepts up to eight PNG, JPEG, GIF, or WebP images, preserves clipboard order, and allows the same image to be pasted again in a later batch.
-
-Pasting during connection still opens the review dialog, but uploading waits until the terminal reports **Interactive**.
-
-The staged-image dialog performs no upload until **Upload and insert path** or its multi-image equivalent is confirmed.
-
-The bridge verifies each image signature, enforces an 8 MiB per-image limit, and writes a random file under `$HOME/.herdr-web/uploads/` by default.
-
-herdr-web uploads up to three images concurrently and inserts all shell-escaped absolute paths in the original order only after every image succeeds, without pressing Enter.
-
-Each image request allows 120 seconds and retries transient network or server failures up to twice with the same upload ID. A recovered retry reuses one host path instead of creating a duplicate file, while permanent errors fail immediately.
-
-If part of a batch still fails, successful paths remain visible and **Retry failed uploads** uploads only unfinished images.
-
-Cancelling after a partial failure does not remove files that already reached the Herdr host, so remove those files manually when they are no longer needed.
-
-If path insertion cannot be confirmed, the dialog retains every uploaded path for insertion retry without uploading a duplicate.
-
-The compatibility composer retains its existing single-image paste, drag/drop, and file-selection behavior when interactive terminal streaming is unavailable.
-
-Remove old attachments manually when they are no longer needed:
-
-```sh
-find "$HOME/.herdr-web/uploads" -type f -delete
-```
-
-Uploads created by earlier versions are left untouched in their project directories and can be removed manually after any Agent references to them are no longer needed.
-
-## Run with Docker
+## Docker
 
 Build and start the production container:
 
@@ -307,15 +196,14 @@ Build and start the production container:
 just up
 ```
 
-`just up` performs these steps:
+The command:
 
-1. Creates an access token unless `HERDR_WEB_TOKEN` is already set.
-2. Starts a loopback-only TCP forwarder for the host Herdr Unix socket.
-3. Starts a separately authenticated loopback proxy for host-side Herdr terminal-session processes.
-4. Builds and starts the Node.js production container.
-5. Selects an available host port and prints local and LAN URLs.
+1. Creates a controller token unless `HERDR_WEB_TOKEN` is set.
+2. Starts loopback-only proxies for the host Herdr socket and terminal sessions.
+3. Builds and starts the Node.js container.
+4. Selects an available host port and prints local and LAN URLs.
 
-Set a fixed web port, custom product data home, custom herdr socket, or narrower project mount when needed:
+Example configuration:
 
 ```sh
 HERDR_WEB_PORT=4173 \
@@ -325,136 +213,85 @@ HERDR_PROJECTS_ROOT="$HOME/workspace" \
 just up
 ```
 
-`just up` mounts both `HERDR_PROJECTS_ROOT` and `HERDR_WEB_HOME` at their same absolute container paths and runs the container with the host UID and GID so uploaded files remain accessible to both the container and host Agent.
+`just up` bind-mounts `HERDR_PROJECTS_ROOT` and `HERDR_WEB_HOME` at the same absolute paths and runs the container with the host UID and GID. This keeps uploads readable by host-side Agents. The default project root is `$HOME`; use the narrowest common parent of all required projects. Uploads fail safely when an Agent's active directory is outside the mounted root.
 
-The default project root is `$HOME`; choose the narrowest common parent containing all Herdr project directories.
-
-Image uploads fail without prompting the Agent when its active directory is outside this mounted root.
-
-Stop both the container and host socket forwarder:
+Stop the container and proxies:
 
 ```sh
 just down
 ```
 
-`just down` remembers the last `HERDR_WEB_HOME` used by `just up`, so a plain shutdown also cleans helper state started with an inline custom home.
+The production process serves the SPA and authenticated API. `/healthz` checks the web process; authenticated `/api/herdr/state` also proves access to the live Herdr server.
 
-The container serves the SPA and authenticated API from one Node.js process.
+## Security model
 
-Its `/healthz` endpoint checks the web process, while authenticated `/api/herdr/state` proves access to the live herdr server.
+The bridge can submit prompts, control panes, manage plugins, run declared plugin actions, and update official integrations. It therefore fails closed when `HERDR_WEB_TOKEN` is empty.
 
-## Security
+- `HERDR_WEB_VIEW_TOKEN` grants global snapshots, event streams, and read-only terminal observation. It cannot prompt, upload, mutate panes, take control, manage shares or workflows, or change plugins and integrations.
+- Controller-created viewer shares use hashed random credentials, expire after 5 minutes to 7 days, expose one exact scope, and can be revoked.
+- Terminal tickets expire after 30 seconds, are single-use, and require the page's same origin.
+- Credentials are removed from the address bar and kept in `sessionStorage`; terminal WebSocket URLs never contain bearer tokens.
+- The service worker does not cache HTML, API responses, event streams, credentials, terminal tickets, or terminal data.
+- Push subscriptions, generated VAPID keys, notification state, and mute preferences are stored in a mode-0600 runtime file without bearer tokens.
+- herdr-web is online-only and does not claim offline terminal execution.
 
-The herdr-web bridge can submit prompts, control terminal panes, manage plugins, run plugin actions, and update official integrations, so it fails closed when `HERDR_WEB_TOKEN` is empty.
+Treat every printed or shared URL like a password. Use direct LAN access only on a trusted network, and put herdr-web behind HTTPS and stronger access controls before exposing it to an untrusted network. PWA installation, Web Push, and wake lock require browser support and a secure context outside localhost.
 
-Set a different `HERDR_WEB_VIEW_TOKEN` to grant global snapshot, event-stream, and read-only terminal observation without prompt, upload, pane, session, takeover, plugin, integration, share-management, or workflow-management permissions.
-Controller-created viewer shares are separate random credentials stored only as hashes, expire after 5 minutes to 7 days, expose a minimized exact-scope projection, issue observe-only scope-checked terminal tickets, and invalidate pending and active share sessions on revocation or expiry.
-The one-time viewer-share URL keeps its secret in the fragment so it is not sent in the initial HTTP request, then moves it into `sessionStorage` and removes it from the address bar.
+## Development
 
-The browser exchanges its bearer token for a random terminal ticket that expires after 30 seconds and can be consumed only once.
-
-Terminal WebSockets require the page's same origin and never place the bearer token in the WebSocket URL.
-
-The controller or global viewer token in a printed URL is moved into `sessionStorage` and removed from the address bar after the page loads.
-
-The Docker socket forwarder listens only on host loopback.
-
-Docker image paste requires read access to the configured `HERDR_PROJECTS_ROOT` and write access to `HERDR_WEB_HOME`, so mount only trusted directories.
-
-Treat every printed or shared URL like a password, use this directly only on a trusted LAN, and place the app behind HTTPS and stronger access controls before exposing it to an untrusted network.
-The service worker never caches HTML, API responses, event streams, terminal tickets, credentials, or terminal data.
-PWA installation, Web Push, and wake lock require browser support and a secure context outside localhost.
-When a controller enables Agent notifications, the browser registers an authenticated Push subscription and the bridge sends Needs input, Failed, and Done transitions even after the page closes.
-Push endpoints, browser keys, generated VAPID keys, cooldown state, mute preferences, and no bearer tokens are stored in the mode-0600 runtime file.
-Set `HERDR_WEB_VAPID_CONTACT` to a `mailto:` or HTTPS contact when the generated VAPID identity should use an operator address.
-herdr-web remains online-only and does not cache or claim offline terminal execution.
-
-## Verification
+Run the repository checks:
 
 ```sh
 npm run check          # Biome formatting and lint rules
 npm run check:package  # npm package metadata and runtime contents
-npm test               # Vitest client, bridge, reducer, and interaction tests
-npm run test:e2e       # Playwright desktop and mobile browser checks
+npm test               # Vitest unit and integration tests
+npm run test:e2e       # Playwright desktop and mobile checks
 npm run build          # Browser and Node production bundles
 npm run ci             # checks, package inspection, tests, and build
 ```
 
-Install Playwright's Chromium once when it is not already available:
+Install Playwright's Chromium once if needed:
 
 ```sh
 npx playwright install chromium
 ```
 
-## Automation and releases
+Visual baselines are platform-specific. After an intentional UI change, update and inspect all baseline images on Linux and macOS, then rerun the browser suite without snapshot updates:
 
-GitHub Actions runs `.github/workflows/ci.yml` for pull requests, pushes to `main`, and manual dispatches.
+```sh
+npm run test:e2e -- --grep 'visual baseline' --update-snapshots=all
+```
 
-CI runs formatting and lint checks, all unit and integration tests, both production builds, and Chromium browser tests on Linux.
-A macOS 15 job runs the browser suite against native Darwin visual baselines and retains browser failure evidence as an Actions artifact for seven days.
-A Windows job also builds the application and verifies native npm startup, named-pipe metadata, and Windows path contracts.
-
-Visual baselines are platform-specific. After intentional UI changes, run `npm run test:e2e -- --grep 'visual baseline' --update-snapshots=all` on both Linux and macOS, inspect all five images per platform, then rerun the browser suite without snapshot updates. CI checks committed expectations and never automatically accepts replacements.
-
-Add a repository Actions secret named `PAT_TOKEN` before running release automation.
-
-Set `PAT_TOKEN` to a GitHub personal access token with permission to update repository contents so its branch and tag pushes trigger downstream workflows.
-
-Configure npm Trusted Publishing for package `herdr-web` with this GitHub repository, workflow `publish.yml`, and environment `release`; no npm token is stored in GitHub.
-
-GitHub Releases use job-scoped `GITHUB_TOKEN` permissions.
-
-Version bumps, publication, and GitHub Releases use the `release` environment so optional deployment-branch or reviewer protection can be configured in repository settings.
-
-Run **Bump version** from `main` and choose `patch` (the default), `minor`, or `major`.
-
-The workflow updates `package.json` and `package-lock.json` in a GitHub-signed commit directly on `main`, then creates the matching `vX.Y.Z` tag at that exact commit without opening a pull request.
-
-The PAT-authenticated commit starts CI, while its tag independently starts `.github/workflows/release.yml` and `.github/workflows/publish.yml`.
-
-Release verifies that the stable semver tag belongs to `main`, matches both package files, and creates a GitHub Release with generated release notes.
-
-Publish performs the same metadata checks, runs the repository and Chromium test gates, and sends `herdr-web` to the public npm registry through npm Trusted Publishing.
-
-The **Publish** and **Release** workflows can be rerun manually only from a matching `vX.Y.Z` tag, and Publish skips an npm version that already exists.
-
-If a bump reports that its version commit succeeded but tag creation failed, create the reported tag at the reported commit instead of running another version bump.
+CI runs on Linux, macOS, and Windows. Browser failure evidence is retained as a GitHub Actions artifact for seven days.
 
 ## Architecture
 
-`server/herdr-client.ts` implements herdr's newline-delimited JSON socket transport.
+| Area | Main implementation |
+| --- | --- |
+| Herdr socket transport | `server/herdr-client.ts` |
+| Snapshot, events, and mutations | `server/herdr-service.ts` |
+| HTTP authentication and API validation | `server/http-app.ts` |
+| Terminal process and WebSocket bridge | `server/terminal-session.ts`, `server/terminal-websocket.ts` |
+| Snapshot-to-workbench mapping | `src/live-state.ts` |
+| Client synchronization and recovery | `src/use-herdr-runtime.ts` |
+| Interactive terminal | `src/components/InteractiveTerminal.tsx` |
+| Remote machine summaries | `server/machine-service.ts` |
+| Viewer shares | `server/share-store.ts`, `server/share-projection.ts` |
+| Workflow templates | `server/workflow-template-store.ts`, `src/workflow-templates.ts` |
+| Push notifications and PWA | `server/push-notifications.ts`, `public/sw.js` |
 
-`server/herdr-service.ts` reads `session.snapshot`, subscribes to structural Herdr events, and exposes prompt, directional pane split, split-ratio, close, upload, and approved agent-start operations.
+The front end uses React, Vite, xterm.js, and Radix Colors, Icons, Themes, and Primitives. Interactive terminals use the bundled JetBrainsMono Nerd Font Mono; see [`public/fonts/README.md`](public/fonts/README.md) for its source and licenses.
 
-`server/terminal-session.ts` launches Herdr terminal control or observation sessions locally or through the authenticated Docker host proxy, validates ordered NDJSON frames, and applies bounded browser-input backpressure.
+The deterministic demo state is available only through explicit test injection and `VITE_DEMO_MODE=true` for browser tests. The production interface does not fabricate lifecycle history, runtime metadata, or settings that Herdr does not expose.
 
-`server/terminal-websocket.ts` consumes one-use tickets, validates origin, and bridges browser messages to one terminal process without replay.
+## Releases
 
-`server/http-app.ts` validates controller or viewer authentication, request sizes, resource IDs, and action payloads before invoking Herdr.
+Release automation requires a repository secret named `PAT_TOKEN` with permission to update repository contents. npm publishing uses Trusted Publishing for package `herdr-web`, workflow `publish.yml`, and environment `release`; no npm token is stored in GitHub.
 
-`src/live-state.ts` maps Herdr protocol 19 through 22 snapshots into the workbench model in `src/state.ts`, grouping split panes under their detected Agent while retaining shell-only tabs as standalone Terminals.
+Run **Bump version** from `main` and choose `patch`, `minor`, or `major`. The workflow creates a GitHub-signed version commit and matching `vX.Y.Z` tag. The tag independently starts release and publish workflows, which verify the version and commit before creating the GitHub Release or publishing to npm.
 
-`server/machine-service.ts` reads saved machine profiles without retaining SSH targets and uses Herdr's machine-routed snapshot command for bounded, independently failing Mission Control summaries.
+If the version commit succeeds but tag creation fails, create the reported tag at that commit instead of running another version bump.
 
-`src/use-herdr-runtime.ts` consumes the structural event stream, separates rejected mutations from unknown outcomes, refreshes after accepted actions, and preserves the last valid snapshot during transient failures.
+## License
 
-`src/attention-center.ts` owns defensive browser-local attention preferences, timestamps, mute, snooze, review, notification cooldown, and deduplication.
-
-`server/share-store.ts` and `server/share-projection.ts` own hashed viewer-share credentials, expiry, revocation, exact-scope projection, and pane authorization.
-
-`server/workflow-template-store.ts` owns atomic project-scoped workflow persistence, while `src/workflow-templates.ts` owns the versioned browser schema and bounded ordered execution.
-
-`src/components/InteractiveTerminal.tsx` owns xterm.js, terminal WebSocket lifecycle, redacted diagnostics, image-path staging, search, and the optional prompt dialog.
-
-`server/push-notifications.ts` owns persisted VAPID identity, authenticated subscriptions, transition deduplication, mute and privacy enforcement, and Web Push delivery.
-
-`public/sw.js` owns PWA lifecycle, Push display, and same-origin notification clicks without an offline cache.
-
-The deterministic demo state remains available only through explicit test injection and `VITE_DEMO_MODE=true` for browser tests.
-
-herdr-web does not edit Herdr configuration files, plugin registries, or Agent integration files directly.
-
-Plugin and integration mutations use Herdr's public API.
-Use Herdr's own configuration commands until it exposes typed configuration reads and atomic patches through its public API.
-
-The interface does not fabricate lifecycle history or settings that Herdr does not expose.
+[MIT](LICENSE)
