@@ -183,6 +183,13 @@
   );
 }
 :is(.theme-mist, .theme-sage, .theme-linen)
+  .workflow-layout
+  > aside
+  > button[data-active="true"] {
+  border-color: var(--clean-accent);
+  background: var(--clean-accent-fill);
+}
+:is(.theme-mist, .theme-sage, .theme-linen)
   :is(.theme-options, .terminal-size-options)
   label[data-selected="true"] {
   border-color: var(--clean-accent);
