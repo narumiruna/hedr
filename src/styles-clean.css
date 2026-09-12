@@ -190,7 +190,7 @@
   background: var(--clean-accent-fill);
 }
 :is(.theme-mist, .theme-sage, .theme-linen)
-  :is(.theme-options, .terminal-size-options)
+  :is(.theme-options, .terminal-size-options, .runtime-options)
   label[data-selected="true"] {
   border-color: var(--clean-accent);
 }
