@@ -1731,7 +1731,8 @@ export function App({
           attentionStartedAt={attention.preferences.firstSeenAt}
           connection={runtime.connection}
           loadMachines={
-            runtime.accessRole === "controller"
+            runtime.accessRole === "controller" &&
+            state.capabilities.machineSupervision
               ? runtime.loadMachines
               : undefined
           }

@@ -1,7 +1,9 @@
 import { execFile } from "node:child_process";
+import { createHmac, randomBytes } from "node:crypto";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
+const SUMMARY_KEY_SECRET = randomBytes(32);
 const MACHINE_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 const MAX_MACHINES = 16;
 const MAX_WORKSPACES = 64;
@@ -9,6 +11,7 @@ const MAX_AGENTS_PER_WORKSPACE = 32;
 const CACHE_MS = 10_000;
 
 export interface SavedMachineAgentSummary {
+  key: string;
   label: string;
   status: string;
 }
@@ -16,6 +19,8 @@ export interface SavedMachineAgentSummary {
 export interface SavedMachineWorkspaceSummary {
   agentCount: number;
   agents: SavedMachineAgentSummary[];
+  agentsTruncated: boolean;
+  key: string;
   label: string;
   needsInput: number;
 }
@@ -34,6 +39,7 @@ export interface SavedMachineSummary {
   version?: string;
   workspaceCount: number;
   workspaces: SavedMachineWorkspaceSummary[];
+  workspacesTruncated: boolean;
 }
 
 export interface SavedMachineListResult {
@@ -62,6 +68,13 @@ function text(value: unknown, fallback: string, max = 128): string {
   return typeof value === "string" && value.trim()
     ? value.trim().slice(0, max)
     : fallback;
+}
+
+function summaryKey(...parts: string[]): string {
+  return createHmac("sha256", SUMMARY_KEY_SECRET)
+    .update(JSON.stringify(parts))
+    .digest("base64url")
+    .slice(0, 22);
 }
 
 export function parseMachineProfiles(value: string): MachineProfile[] {
@@ -119,16 +132,28 @@ export function summarizeMachineSnapshot(
 ): SavedMachineSummary {
   const snapshot = snapshotFromOutput(value);
   const agents = records(snapshot.agents);
-  const workspaces = records(snapshot.workspaces)
+  const snapshotWorkspaces = records(snapshot.workspaces);
+  const workspaces = snapshotWorkspaces
     .slice(0, MAX_WORKSPACES)
-    .map((workspace) => {
+    .map((workspace, workspaceIndex) => {
       const workspaceId = text(workspace.workspace_id, "", 128);
+      const workspaceKey = summaryKey(
+        "workspace",
+        profile.id,
+        workspaceId || `missing:${workspaceIndex}`,
+      );
       const members = agents.filter(
         (agent) => text(agent.workspace_id, "", 128) === workspaceId,
       );
       const agentSummaries = members
         .slice(0, MAX_AGENTS_PER_WORKSPACE)
-        .map((agent) => ({
+        .map((agent, agentIndex) => ({
+          key: summaryKey(
+            "agent",
+            profile.id,
+            text(agent.pane_id, "", 128) ||
+              `${workspaceKey}:missing:${agentIndex}`,
+          ),
           label: text(
             agent.label ??
               agent.title ??
@@ -143,6 +168,8 @@ export function summarizeMachineSnapshot(
       return {
         agentCount: members.length,
         agents: agentSummaries,
+        agentsTruncated: members.length > agentSummaries.length,
+        key: workspaceKey,
         label: text(workspace.label, "Space", 80),
         needsInput: members.filter((agent) => agent.agent_status === "blocked")
           .length,
@@ -165,8 +192,9 @@ export function summarizeMachineSnapshot(
     session: profile.session,
     status: "online",
     version: text(snapshot.version, "", 40) || undefined,
-    workspaceCount: records(snapshot.workspaces).length,
+    workspaceCount: snapshotWorkspaces.length,
     workspaces,
+    workspacesTruncated: snapshotWorkspaces.length > workspaces.length,
   };
 }
 
@@ -207,6 +235,7 @@ function unavailableMachine(
     status: "offline",
     workspaceCount: 0,
     workspaces: [],
+    workspacesTruncated: false,
   };
 }
 
@@ -226,8 +255,12 @@ export class SavedMachineService {
     },
   ) {}
 
-  list(): Promise<SavedMachineListResult> {
-    if (this.cached && Date.now() - this.cached.at < CACHE_MS) {
+  list(forceRefresh = false): Promise<SavedMachineListResult> {
+    if (
+      !forceRefresh &&
+      this.cached &&
+      Date.now() - this.cached.at < CACHE_MS
+    ) {
       return Promise.resolve(this.cached.result);
     }
     if (this.inFlight) return this.inFlight;
@@ -258,6 +291,7 @@ export class SavedMachineService {
             status: "disabled",
             workspaceCount: 0,
             workspaces: [],
+            workspacesTruncated: false,
           };
         }
         try {

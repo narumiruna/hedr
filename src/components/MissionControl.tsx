@@ -15,7 +15,7 @@ interface MissionControlProps {
   accessRole: AccessRole;
   attentionStartedAt: Record<string, number>;
   connection: RuntimeConnection;
-  loadMachines?: () => Promise<SavedMachineSummary[]>;
+  loadMachines?: (forceRefresh?: boolean) => Promise<SavedMachineSummary[]>;
   open: boolean;
   state: HerdrState;
   onOpenAgent: (agentId: string, paneId: string) => void;

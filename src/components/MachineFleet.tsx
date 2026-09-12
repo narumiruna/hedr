@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SavedMachineSummary } from "../herdr-api";
 
 interface MachineFleetProps {
-  load: () => Promise<SavedMachineSummary[]>;
+  load: (forceRefresh?: boolean) => Promise<SavedMachineSummary[]>;
   open: boolean;
 }
 
@@ -30,12 +30,12 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
     loadRef.current = load;
   }, [load]);
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (forceRefresh = false) => {
     const loadId = ++latestLoadId.current;
     setLoading(true);
     setError("");
     try {
-      const next = await loadRef.current();
+      const next = await loadRef.current(forceRefresh);
       if (loadId === latestLoadId.current) setMachines(next);
     } catch (loadError) {
       if (loadId === latestLoadId.current) {
@@ -77,7 +77,7 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
           size="1"
           variant="soft"
           loading={loading}
-          onClick={() => void reload()}
+          onClick={() => void reload(true)}
         >
           <ReloadIcon /> Reload
         </Button>
@@ -112,7 +112,12 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
               {machine.status === "online" ? (
                 <>
                   <div className="machine-counts">
-                    <span>{machine.workspaceCount} Spaces</span>
+                    <span>
+                      {machine.workspaceCount} Spaces
+                      {machine.workspacesTruncated
+                        ? ` · showing ${machine.workspaces.length}`
+                        : ""}
+                    </span>
                     <span>{machine.agentCount} Agents</span>
                     <span data-attention={machine.needsInput > 0}>
                       {machine.needsInput} need input
@@ -120,13 +125,16 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
                   </div>
                   <div className="machine-space-list">
                     {machine.workspaces.map((workspace) => (
-                      <section
-                        key={`${workspace.label}:${workspace.agentCount}:${workspace.needsInput}`}
-                      >
+                      <section key={workspace.key}>
                         <header>
                           <Component1Icon aria-hidden="true" />
                           <strong>{workspace.label}</strong>
-                          <small>{workspace.agentCount} Agents</small>
+                          <small>
+                            {workspace.agentCount} Agents
+                            {workspace.agentsTruncated
+                              ? ` · showing ${workspace.agents.length}`
+                              : ""}
+                          </small>
                           {workspace.needsInput > 0 && (
                             <span>
                               <ExclamationTriangleIcon aria-hidden="true" />
@@ -137,10 +145,7 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
                         {workspace.agents.length > 0 && (
                           <ul>
                             {workspace.agents.map((agent) => (
-                              <li
-                                key={`${agent.label}:${agent.status}`}
-                                data-status={agent.status}
-                              >
+                              <li key={agent.key} data-status={agent.status}>
                                 <i aria-hidden="true" />
                                 <span>{agent.label}</span>
                                 <small>{agent.status}</small>

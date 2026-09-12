@@ -91,15 +91,74 @@ describe("saved machine supervision", () => {
         {
           agentCount: 2,
           agents: [
-            { label: "Muse review", status: "blocked" },
-            { label: "pi", status: "working" },
+            expect.objectContaining({
+              label: "Muse review",
+              status: "blocked",
+            }),
+            expect.objectContaining({ label: "pi", status: "working" }),
           ],
+          agentsTruncated: false,
           label: "herdr",
           needsInput: 1,
         },
       ],
+      workspacesTruncated: false,
     });
     expect(JSON.stringify(summary)).not.toContain("w1:p1");
+  });
+
+  test("marks bounded details as truncated and gives duplicate labels opaque keys", () => {
+    const [profile] = parseMachineProfiles(JSON.stringify(profiles));
+    if (!profile) throw new Error("Missing machine profile");
+    const crowdedSnapshot = JSON.stringify({
+      result: {
+        snapshot: {
+          agents: Array.from({ length: 33 }, (_, index) => ({
+            agent_status: "idle",
+            pane_id: `pane-${index}`,
+            terminal_title_stripped: "Duplicate Agent",
+            workspace_id: "space-0",
+          })),
+          protocol: 22,
+          version: "0.9.0",
+          workspaces: Array.from({ length: 65 }, (_, index) => ({
+            label: "Duplicate Space",
+            workspace_id: `space-${index}`,
+          })),
+        },
+      },
+    });
+
+    const summary = summarizeMachineSnapshot(profile, crowdedSnapshot);
+
+    expect(summary).toMatchObject({
+      workspaceCount: 65,
+      workspacesTruncated: true,
+    });
+    expect(summary.workspaces).toHaveLength(64);
+    expect(new Set(summary.workspaces.map(({ key }) => key))).toHaveProperty(
+      "size",
+      64,
+    );
+    expect(summary.workspaces[0]).toMatchObject({
+      agentCount: 33,
+      agentsTruncated: true,
+    });
+    expect(summary.workspaces[0]?.agents).toHaveLength(32);
+    expect(
+      new Set(summary.workspaces[0]?.agents.map(({ key }) => key)),
+    ).toHaveProperty("size", 32);
+    expect(summary.workspaces.map(({ key }) => key)).not.toContain("space-0");
+    expect(summary.workspaces[0]?.agents.map(({ key }) => key)).not.toContain(
+      "pane-0",
+    );
+    const repeated = summarizeMachineSnapshot(profile, crowdedSnapshot);
+    expect(repeated.workspaces.map(({ key }) => key)).toEqual(
+      summary.workspaces.map(({ key }) => key),
+    );
+    expect(repeated.workspaces[0]?.agents.map(({ key }) => key)).toEqual(
+      summary.workspaces[0]?.agents.map(({ key }) => key),
+    );
   });
 
   test("uses exact argv routing and isolates unavailable and disabled machines", async () => {
@@ -127,6 +186,12 @@ describe("saved machine supervision", () => {
     expect(JSON.stringify(result)).not.toContain("private.example");
     expect(await service.list()).toBe(result);
     expect(run).toHaveBeenCalledTimes(2);
+
+    expect(await service.list(true)).not.toBe(result);
+    expect(run.mock.calls.slice(2)).toEqual([
+      [["machine", "list", "--json"], 5_000],
+      [["--machine", profiles[0]?.id, "api", "snapshot"], 12_000],
+    ]);
   });
 
   test("rejects malformed machine ids before using them as command arguments", () => {

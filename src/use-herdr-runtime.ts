@@ -121,7 +121,7 @@ interface HerdrRuntime {
   refresh: () => Promise<void>;
   invokePluginAction: (actionId: string) => Promise<void>;
   listViewerShares: () => Promise<ViewerShare[]>;
-  loadMachines: () => Promise<SavedMachineSummary[]>;
+  loadMachines: (forceRefresh?: boolean) => Promise<SavedMachineSummary[]>;
   loadProjectWorkflows: (projectKey: string) => Promise<WorkflowTemplate[]>;
   loadRuntimeManagement: () => Promise<RuntimeManagementState>;
   manageIntegration: (
@@ -483,9 +483,9 @@ export function useHerdrRuntime(
       if (!client || !live) return [];
       return (await client.viewerShares()).shares;
     },
-    loadMachines: async () => {
+    loadMachines: async (forceRefresh = false) => {
       if (!client || !live) return [];
-      return (await client.machines()).machines;
+      return (await client.machines(forceRefresh)).machines;
     },
     loadProjectWorkflows: async (projectKey) => {
       if (!client || !live) return [];

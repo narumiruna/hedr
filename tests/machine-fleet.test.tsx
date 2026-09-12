@@ -5,7 +5,7 @@ import { MachineFleet } from "../src/components/MachineFleet";
 
 const machines = [
   {
-    agentCount: 2,
+    agentCount: 33,
     enabled: true,
     id: "machine-build",
     label: "Build machine",
@@ -15,18 +15,21 @@ const machines = [
     session: "agents",
     status: "online" as const,
     version: "0.9.0",
-    workspaceCount: 1,
+    workspaceCount: 65,
     workspaces: [
       {
-        agentCount: 2,
+        agentCount: 33,
         agents: [
-          { label: "Muse review", status: "blocked" },
-          { label: "Pi tests", status: "working" },
+          { key: "muse", label: "Muse review", status: "blocked" },
+          { key: "pi", label: "Pi tests", status: "working" },
         ],
+        agentsTruncated: true,
+        key: "herdr",
         label: "herdr",
         needsInput: 1,
       },
     ],
+    workspacesTruncated: true,
   },
   {
     agentCount: 0,
@@ -39,6 +42,7 @@ const machines = [
     status: "disabled" as const,
     workspaceCount: 0,
     workspaces: [],
+    workspacesTruncated: false,
   },
 ];
 
@@ -69,6 +73,8 @@ describe("MachineFleet", () => {
     const build = within(fleet).getByText("Build machine").closest("article");
     if (!build) throw new Error("Missing build machine card");
     expect(build).toHaveTextContent("Online");
+    expect(build).toHaveTextContent("65 Spaces · showing 1");
+    expect(build).toHaveTextContent("33 Agents · showing 2");
     expect(build).toHaveTextContent("1 need input");
     expect(build).toHaveTextContent("Muse review");
     expect(build).toHaveTextContent("blocked");
@@ -91,5 +97,6 @@ describe("MachineFleet", () => {
       "Herdr machine forwarding unavailable",
     );
     await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+    expect(load.mock.calls).toEqual([[false], [true]]);
   });
 });

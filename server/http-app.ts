@@ -136,6 +136,28 @@ function sendJson(
   response.end(body);
 }
 
+function stateWithBridgeCapabilities(
+  state: unknown,
+  role: "controller" | "viewer",
+  machineSupervision: boolean,
+): unknown {
+  if (!state || typeof state !== "object" || Array.isArray(state)) return state;
+  const record = state as Record<string, unknown>;
+  const capabilities = record.capabilities;
+  return {
+    ...record,
+    access: { role },
+    capabilities: {
+      ...(capabilities &&
+      typeof capabilities === "object" &&
+      !Array.isArray(capabilities)
+        ? capabilities
+        : {}),
+      machineSupervision: role === "controller" && machineSupervision,
+    },
+  };
+}
+
 function tokenMatches(supplied: string, expected: string): boolean {
   const suppliedBytes = Buffer.from(supplied);
   const expectedBytes = Buffer.from(expected);
@@ -725,9 +747,7 @@ export function createHerdrHttpHandler({
         sendJson(
           response,
           200,
-          state && typeof state === "object" && !Array.isArray(state)
-            ? { ...state, access: { role } }
-            : state,
+          stateWithBridgeCapabilities(state, role, Boolean(machineService)),
         );
         return;
       }
@@ -930,16 +950,17 @@ export function createHerdrHttpHandler({
         sendJson(response, 200, { id, type: "viewer_share_revoked" });
         return;
       }
-      if (role === "viewer") {
-        sendJson(response, 403, {
-          error: {
-            code: "read_only_access",
-            message: "This access token does not permit Herdr mutations",
-          },
-        });
-        return;
-      }
       if (request.method === "GET" && url.pathname === "/api/herdr/machines") {
+        if (role !== "controller") {
+          sendJson(response, 403, {
+            error: {
+              code: "read_only_access",
+              message:
+                "Saved SSH machine supervision requires controller access",
+            },
+          });
+          return;
+        }
         if (!machineService) {
           sendJson(response, 404, {
             error: {
@@ -949,7 +970,20 @@ export function createHerdrHttpHandler({
           });
           return;
         }
-        sendJson(response, 200, await machineService.list());
+        sendJson(
+          response,
+          200,
+          await machineService.list(url.searchParams.get("refresh") === "1"),
+        );
+        return;
+      }
+      if (role === "viewer") {
+        sendJson(response, 403, {
+          error: {
+            code: "read_only_access",
+            message: "This access token does not permit Herdr mutations",
+          },
+        });
         return;
       }
       if (

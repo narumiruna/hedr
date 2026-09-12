@@ -110,6 +110,7 @@ export interface PluginLogListResult {
 }
 
 export interface SavedMachineAgentSummary {
+  key: string;
   label: string;
   status: string;
 }
@@ -117,6 +118,8 @@ export interface SavedMachineAgentSummary {
 export interface SavedMachineWorkspaceSummary {
   agentCount: number;
   agents: SavedMachineAgentSummary[];
+  agentsTruncated: boolean;
+  key: string;
   label: string;
   needsInput: number;
 }
@@ -135,6 +138,7 @@ export interface SavedMachineSummary {
   version?: string;
   workspaceCount: number;
   workspaces: SavedMachineWorkspaceSummary[];
+  workspacesTruncated: boolean;
 }
 
 export interface SavedMachineListResult {
@@ -429,10 +433,11 @@ export class HerdrApiClient {
     if (!signal.aborted) throw new Error("Herdr event stream disconnected");
   }
 
-  machines(): Promise<SavedMachineListResult> {
-    return this.request("/api/herdr/machines", {
-      signal: AbortSignal.timeout(25_000),
-    });
+  machines(forceRefresh = false): Promise<SavedMachineListResult> {
+    return this.request(
+      `/api/herdr/machines${forceRefresh ? "?refresh=1" : ""}`,
+      { signal: AbortSignal.timeout(25_000) },
+    );
   }
 
   plugins(): Promise<PluginListResult> {
