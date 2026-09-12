@@ -5,6 +5,12 @@ import { createRoot } from "react-dom/client";
 import { InteractiveTerminal } from "../src/components/InteractiveTerminal";
 import { EMPTY_COMPOSER_DRAFT } from "../src/components/TerminalWorkspace";
 import { DEFAULT_TERMINAL_FONT_SIZE } from "../src/terminal-preferences";
+import {
+  DEFAULT_WORKBENCH_THEME,
+  isWorkbenchTheme,
+  themeAppearance,
+  themeStyle,
+} from "../src/theme-preferences";
 
 const RENDERING_FIXTURE = [
   "\u001b[2J\u001b[H",
@@ -103,7 +109,7 @@ function HarnessTerminal({
       actionsEnabled
       agentId={paneId}
       agentLabel={paneId}
-      canPrompt={false}
+      canPrompt
       controlEnabled
       createTicket={async () => ({
         expiresAt: Date.now() + 30_000,
@@ -132,13 +138,23 @@ function HarnessTerminal({
   );
 }
 
-const split = new URL(window.location.href).searchParams.has("split");
+const searchParams = new URL(window.location.href).searchParams;
+const requestedTheme = searchParams.get("theme");
+const theme = isWorkbenchTheme(requestedTheme)
+  ? requestedTheme
+  : DEFAULT_WORKBENCH_THEME;
+document.documentElement.classList.remove("dark", "light");
+document.documentElement.classList.add(
+  themeAppearance(theme),
+  `theme-${themeStyle(theme)}`,
+);
+const split = searchParams.has("split");
 createRoot(root).render(
   <Theme
-    appearance="dark"
+    appearance={themeAppearance(theme)}
     accentColor="amber"
     grayColor="sand"
-    className="herdr-web-theme theme-editorial"
+    className={`herdr-web-theme theme-${themeStyle(theme)}`}
   >
     <div style={{ display: "flex", width: "100%", height: "100dvh" }}>
       {split && <HarnessTerminal focused={false} paneId="w5:p1" />}
