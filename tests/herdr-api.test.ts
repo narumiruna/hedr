@@ -210,10 +210,18 @@ describe("Herdr API requests", () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     const fetchMock = vi.fn().mockImplementation(
       async () =>
-        new Response(JSON.stringify({ machines: [], type: "machine_list" }), {
-          headers: { "content-type": "application/json" },
-          status: 200,
-        }),
+        new Response(
+          JSON.stringify({
+            machineCount: 0,
+            machines: [],
+            machinesTruncated: false,
+            type: "machine_list",
+          }),
+          {
+            headers: { "content-type": "application/json" },
+            status: 200,
+          },
+        ),
     );
     vi.stubGlobal("fetch", fetchMock);
 

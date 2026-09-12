@@ -4,7 +4,7 @@ import {
   ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
-import type { SavedMachineSummary } from "../herdr-api";
+import type { SavedMachineListResult } from "../herdr-api";
 import type { Agent, HerdrState } from "../state";
 import type { AccessRole, RuntimeConnection } from "../use-herdr-runtime";
 import { MachineFleet } from "./MachineFleet";
@@ -15,7 +15,7 @@ interface MissionControlProps {
   accessRole: AccessRole;
   attentionStartedAt: Record<string, number>;
   connection: RuntimeConnection;
-  loadMachines?: (forceRefresh?: boolean) => Promise<SavedMachineSummary[]>;
+  loadMachines?: (forceRefresh?: boolean) => Promise<SavedMachineListResult>;
   open: boolean;
   state: HerdrState;
   onOpenAgent: (agentId: string, paneId: string) => void;

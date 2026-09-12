@@ -6,10 +6,10 @@ import {
 } from "@radix-ui/react-icons";
 import { Button } from "@radix-ui/themes";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { SavedMachineSummary } from "../herdr-api";
+import type { SavedMachineListResult, SavedMachineSummary } from "../herdr-api";
 
 interface MachineFleetProps {
-  load: (forceRefresh?: boolean) => Promise<SavedMachineSummary[]>;
+  load: (forceRefresh?: boolean) => Promise<SavedMachineListResult>;
   open: boolean;
 }
 
@@ -22,7 +22,12 @@ function statusLabel(machine: SavedMachineSummary): string {
 export function MachineFleet({ load, open }: MachineFleetProps) {
   const loadRef = useRef(load);
   const latestLoadId = useRef(0);
-  const [machines, setMachines] = useState<SavedMachineSummary[]>([]);
+  const [catalog, setCatalog] = useState<SavedMachineListResult>({
+    machineCount: 0,
+    machines: [],
+    machinesTruncated: false,
+    type: "machine_list",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,7 +41,7 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
     setError("");
     try {
       const next = await loadRef.current(forceRefresh);
-      if (loadId === latestLoadId.current) setMachines(next);
+      if (loadId === latestLoadId.current) setCatalog(next);
     } catch (loadError) {
       if (loadId === latestLoadId.current) {
         setError(
@@ -58,6 +63,8 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
     }
     void reload();
   }, [open, reload]);
+
+  const { machines } = catalog;
 
   return (
     <section className="machine-fleet" aria-labelledby="machine-fleet-title">
@@ -82,6 +89,13 @@ export function MachineFleet({ load, open }: MachineFleetProps) {
           <ReloadIcon /> Reload
         </Button>
       </header>
+
+      {catalog.machinesTruncated && !error && (
+        <p className="machine-fleet-limit" role="status">
+          Showing the first {machines.length} of {catalog.machineCount} saved
+          machines.
+        </p>
+      )}
 
       {error ? (
         <p className="machine-fleet-error" role="alert">

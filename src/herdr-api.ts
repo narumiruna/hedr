@@ -142,7 +142,9 @@ export interface SavedMachineSummary {
 }
 
 export interface SavedMachineListResult {
+  machineCount: number;
   machines: SavedMachineSummary[];
+  machinesTruncated: boolean;
   type: "machine_list";
 }
 

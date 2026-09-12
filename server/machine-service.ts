@@ -43,7 +43,9 @@ export interface SavedMachineSummary {
 }
 
 export interface SavedMachineListResult {
+  machineCount: number;
   machines: SavedMachineSummary[];
+  machinesTruncated: boolean;
   type: "machine_list";
 }
 
@@ -70,6 +72,14 @@ function text(value: unknown, fallback: string, max = 128): string {
     : fallback;
 }
 
+function firstText(values: unknown[], fallback: string, max = 128): string {
+  for (const value of values) {
+    const candidate = text(value, "", max);
+    if (candidate) return candidate;
+  }
+  return fallback;
+}
+
 function summaryKey(...parts: string[]): string {
   return createHmac("sha256", SUMMARY_KEY_SECRET)
     .update(JSON.stringify(parts))
@@ -77,12 +87,15 @@ function summaryKey(...parts: string[]): string {
     .slice(0, 22);
 }
 
-export function parseMachineProfiles(value: string): MachineProfile[] {
+function parseMachineCatalog(value: string): {
+  profiles: MachineProfile[];
+  total: number;
+} {
   const parsed = JSON.parse(value) as unknown;
   if (!Array.isArray(parsed)) {
     throw new TypeError("Herdr machine list must be a JSON array");
   }
-  return parsed.slice(0, MAX_MACHINES).map((entry) => {
+  const profiles = parsed.slice(0, MAX_MACHINES).map((entry) => {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
       throw new TypeError("Herdr returned an invalid machine profile");
     }
@@ -99,6 +112,11 @@ export function parseMachineProfiles(value: string): MachineProfile[] {
       session: text(profile.session, "default", 80),
     };
   });
+  return { profiles, total: parsed.length };
+}
+
+export function parseMachineProfiles(value: string): MachineProfile[] {
+  return parseMachineCatalog(value).profiles;
 }
 
 function snapshotFromOutput(value: string): Record<string, unknown> {
@@ -154,12 +172,14 @@ export function summarizeMachineSnapshot(
             text(agent.pane_id, "", 128) ||
               `${workspaceKey}:missing:${agentIndex}`,
           ),
-          label: text(
-            agent.label ??
-              agent.title ??
-              agent.terminal_title_stripped ??
-              agent.display_agent ??
+          label: firstText(
+            [
+              agent.label,
+              agent.title,
+              agent.terminal_title_stripped,
+              agent.display_agent,
               agent.agent,
+            ],
             "Agent",
             80,
           ),
@@ -274,11 +294,11 @@ export class SavedMachineService {
   }
 
   private async load(): Promise<SavedMachineListResult> {
-    const profiles = parseMachineProfiles(
+    const catalog = parseMachineCatalog(
       (await this.run(["machine", "list", "--json"], 5_000)).stdout,
     );
     const machines = await Promise.all(
-      profiles.map(async (profile): Promise<SavedMachineSummary> => {
+      catalog.profiles.map(async (profile): Promise<SavedMachineSummary> => {
         if (!profile.enabled) {
           return {
             agentCount: 0,
@@ -305,6 +325,11 @@ export class SavedMachineService {
         }
       }),
     );
-    return { machines, type: "machine_list" };
+    return {
+      machineCount: catalog.total,
+      machines,
+      machinesTruncated: catalog.total > machines.length,
+      type: "machine_list",
+    };
   }
 }

@@ -32,8 +32,10 @@ const snapshot = JSON.stringify({
         {
           agent: "muse",
           agent_status: "blocked",
+          label: "  ",
           pane_id: "w1:p1",
           terminal_title_stripped: "Muse review",
+          title: "",
           workspace_id: "w1",
         },
         {
@@ -71,6 +73,28 @@ describe("saved machine supervision", () => {
       },
     ]);
     expect(JSON.stringify(parsed)).not.toContain("private.example");
+  });
+
+  test("reports machine-catalog truncation instead of presenting a complete fleet", async () => {
+    const manyProfiles = Array.from({ length: 17 }, (_, index) => ({
+      enabled: false,
+      id: index.toString(16).padStart(32, "0"),
+      label: `Machine ${index}`,
+      selected: false,
+      session: "default",
+    }));
+    const run = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify(manyProfiles),
+    });
+
+    const result = await new SavedMachineService("herdr", run).list();
+
+    expect(result).toMatchObject({
+      machineCount: 17,
+      machinesTruncated: true,
+    });
+    expect(result.machines).toHaveLength(16);
+    expect(run).toHaveBeenCalledOnce();
   });
 
   test("summarizes remote Spaces, Agents, and attention without exposing pane ids", () => {
@@ -176,6 +200,10 @@ describe("saved machine supervision", () => {
       [["machine", "list", "--json"], 5_000],
       [["--machine", profiles[0]?.id, "api", "snapshot"], 12_000],
     ]);
+    expect(result).toMatchObject({
+      machineCount: 2,
+      machinesTruncated: false,
+    });
     expect(result.machines).toEqual([
       expect.objectContaining({
         error: "Remote snapshot is unavailable",

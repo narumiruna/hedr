@@ -356,8 +356,13 @@
 }
 .machine-fleet small,
 .machine-fleet-empty,
+.machine-fleet-limit,
 .machine-card-message {
   color: var(--ink-muted);
+}
+.machine-fleet-limit {
+  margin-bottom: 9px;
+  font-size: 10px;
 }
 .machine-fleet-grid {
   display: grid;

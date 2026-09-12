@@ -169,6 +169,7 @@ describe("herdr HTTP bridge", () => {
   test("exposes saved SSH summaries only to controllers", async () => {
     const machineService = {
       list: vi.fn().mockResolvedValue({
+        machineCount: 1,
         machines: [
           {
             agentCount: 2,
@@ -183,6 +184,7 @@ describe("herdr HTTP bridge", () => {
             workspaces: [],
           },
         ],
+        machinesTruncated: false,
         type: "machine_list",
       }),
     } as unknown as SavedMachineService;
