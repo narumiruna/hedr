@@ -75,6 +75,14 @@ To link the command from this checkout instead:
 just install-cli
 ```
 
+Update the global npm installation to the latest published release:
+
+```sh
+herdr-web update
+```
+
+This runs `npm install --global herdr-web@latest`; it does not update Herdr. npm may require the same permissions used for the original global installation. When the command is linked from a development checkout, updating replaces that link with the published package.
+
 Start the web workbench without opening the shell's current directory:
 
 ```sh
@@ -92,7 +100,7 @@ With a directory, the command resolves it, focuses an existing Herdr workspace t
 
 Without a directory, the command starts that web workflow without focusing or creating a workspace.
 
-Run `herdr-web --help` for usage and press `Ctrl+C` to stop the development web processes.
+Run `herdr-web --help` for usage, including the `update` command, and press `Ctrl+C` to stop the development web processes.
 
 The command does not require `just`.
 Directory-opening mode also invokes `herdr`, while a linked development command depends on this checkout and its installed npm dependencies.

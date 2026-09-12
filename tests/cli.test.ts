@@ -147,6 +147,40 @@ describe("herdr-web CLI", () => {
     ]);
   });
 
+  it("updates the global npm installation without starting Herdr", async () => {
+    const result = await runCli(["update"]);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(
+      "Updating herdr-web to the latest release...",
+    );
+    expect(result.stdout).toContain("herdr-web is up to date.");
+    expect(result.invocations).toEqual([
+      {
+        command: "npm",
+        args: ["install", "--global", "herdr-web@latest"],
+        cwd: result.root,
+      },
+    ]);
+  });
+
+  it("reports npm update failures without claiming success", async () => {
+    const result = await runCli(["update"], { env: { NPM_EXIT: "9" } });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stdout).not.toContain("herdr-web is up to date.");
+    expect(result.stderr).toContain(
+      "Update failed: npm install --global herdr-web@latest",
+    );
+    expect(result.invocations).toEqual([
+      {
+        command: "npm",
+        args: ["install", "--global", "herdr-web@latest"],
+        cwd: result.root,
+      },
+    ]);
+  });
+
   it("opens the current directory when explicitly requested", async () => {
     const result = await runCli(["."]);
 
@@ -237,6 +271,7 @@ describe("herdr-web CLI", () => {
     expect(result.stdout).toContain("Start the herdr-web workbench");
     expect(result.stdout).toContain("USAGE herdr-web [OPTIONS] [DIRECTORY]");
     expect(result.stdout).toContain("Project directory to focus or create");
+    expect(result.stdout).toContain("or 'update'");
     expect(result.invocations).toEqual([]);
   });
 });
