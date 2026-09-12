@@ -11,6 +11,12 @@ import { App } from "../src/App";
 import { ViewerShareDialog } from "../src/components/ViewerShareDialog";
 import { WorkflowTemplatesDialog } from "../src/components/WorkflowTemplatesDialog";
 import { createDemoState } from "../src/state";
+import {
+  themeAppearance,
+  themeStyle,
+  WORKBENCH_THEME_STYLES,
+  WORKBENCH_THEMES,
+} from "../src/theme-preferences";
 import type { WorkflowTemplate } from "../src/workflow-templates";
 
 function renderApp() {
@@ -24,8 +30,7 @@ describe("herdr-web terminal-first workbench", () => {
     document.documentElement.classList.remove(
       "dark",
       "light",
-      "theme-classic",
-      "theme-editorial",
+      ...WORKBENCH_THEME_STYLES.map((style) => `theme-${style}`),
     );
     const values = new Map<string, string>();
     Object.defineProperty(window, "localStorage", {
@@ -56,6 +61,28 @@ describe("herdr-web terminal-first workbench", () => {
     );
     expect(document.documentElement).toHaveClass("light", "theme-editorial");
   });
+
+  test.each(WORKBENCH_THEMES)(
+    "restores saved $label and removes stale theme classes",
+    ({ theme }) => {
+      for (const style of WORKBENCH_THEME_STYLES) {
+        document.documentElement.classList.add(`theme-${style}`);
+      }
+      window.localStorage.setItem("herdr-web-theme", theme);
+      const app = render(<App live={false} />);
+      const expectedClass = `theme-${themeStyle(theme)}`;
+      expect(app.container.querySelector(".herdr-web-theme")).toHaveClass(
+        expectedClass,
+        themeAppearance(theme),
+      );
+      expect(
+        [...document.documentElement.classList].filter((name) =>
+          name.startsWith("theme-"),
+        ),
+      ).toEqual([expectedClass]);
+      expect(window.localStorage.getItem("herdr-web-theme")).toBe(theme);
+    },
+  );
 
   test("shows the herdr-web product identity", () => {
     renderApp();
@@ -323,8 +350,10 @@ describe("herdr-web terminal-first workbench", () => {
     const settings = screen.getByRole("dialog", { name: "Settings" });
     expect(settings).toBeVisible();
     expect(
-      within(settings).getAllByRole("radio", { name: /Editorial|Classic/ }),
-    ).toHaveLength(4);
+      within(
+        within(settings).getByRole("group", { name: "Theme" }),
+      ).getAllByRole("radio"),
+    ).toHaveLength(WORKBENCH_THEMES.length);
     await user.click(screen.getByRole("radio", { name: /Classic Light/ }));
     await user.click(screen.getByRole("radio", { name: /Compact/ }));
     await user.click(screen.getByRole("button", { name: "Cancel" }));

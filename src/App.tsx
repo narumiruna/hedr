@@ -56,6 +56,7 @@ import {
   themeFromSavedPreferences,
   themeStyle,
   toggleThemeAppearance,
+  WORKBENCH_THEME_STYLES,
   type WorkbenchTheme,
 } from "./theme-preferences";
 import { useBackgroundPush } from "./use-background-push";
@@ -521,14 +522,12 @@ export function App({
     }
     document.documentElement.classList.toggle("dark", appearance === "dark");
     document.documentElement.classList.toggle("light", appearance === "light");
-    document.documentElement.classList.toggle(
-      "theme-editorial",
-      style === "editorial",
-    );
-    document.documentElement.classList.toggle(
-      "theme-classic",
-      style === "classic",
-    );
+    for (const option of WORKBENCH_THEME_STYLES) {
+      document.documentElement.classList.toggle(
+        `theme-${option}`,
+        style === option,
+      );
+    }
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute("content", themeBrowserColor(workbenchTheme));

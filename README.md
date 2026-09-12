@@ -29,7 +29,7 @@ It keeps herdr's core job visible: find the Agent that needs input, control its 
 - A keyboard-navigable `⌘K` or `Ctrl+K` palette for jumping between workspaces, Agents, and Terminals.
 - On-demand session details without synthetic activity or unsupported runtime metadata.
 - Last-valid-snapshot recovery with snapshot age, safe disabled actions, and per-pane read recovery.
-- Four saved themes: Editorial Light and Dark use warm paper and subdued sumi tones, while Classic Light and Dark preserve the original Sand and Amber workbench.
+- Ten saved themes: clean Mist, Sage, and Linen palettes join Editorial and Classic, each with Light and Dark variants and palette previews in Settings.
 - Interactive terminals retain their independent high-contrast dark palette across every theme for reliable ANSI and TUI readability.
 - Bundled JetBrainsMono Nerd Font Mono (Nerd Fonts v3.5.1) for terminal text and icons, Unicode 11 cell widths, optional WebGL acceleration, and a safe built-in renderer fallback. Font source and licenses: [`public/fonts/README.md`](public/fonts/README.md).
 - Browser-saved Compact, Default, and Comfortable terminal text sizes with focused-terminal zoom shortcuts.
@@ -166,7 +166,24 @@ Use **Grouped** to keep Agents in Space and tab order, or **Priority** to surfac
 
 Use **New** below Spaces to preview and create a persistent Herdr workspace for a host directory.
 
-Use **Menu → Settings** to choose Editorial Light, Editorial Dark, Classic Light, or Classic Dark, adjust terminal text size, configure notifications, choose explicit accessibility preferences, request a foreground wake lock, or install the PWA when the browser supports installation.
+Use **Menu → Settings** to choose a theme, adjust terminal text size, configure notifications, choose explicit accessibility preferences, request a foreground wake lock, or install the PWA when the browser supports installation.
+
+Each theme has Light and Dark variants:
+
+| Theme | Appearance |
+| --- | --- |
+| Mist | Cool slate surfaces with quiet blue accents. |
+| Sage | Fresh gray-green surfaces with muted green accents. |
+| Linen | Soft ivory or warm charcoal with taupe accents. |
+| Editorial | Warm paper and subdued sumi tones with editorial typography. |
+| Classic | The original Sand and Amber workbench. |
+
+Mist, Sage, and Linen use sans-serif headings, flat surfaces, thin borders, and restrained accents; status colors remain amber for Needs input, blue for Working, green for Done, and red for failures.
+Palette swatches preview each option without changing the workbench until **Apply**; **Cancel** discards the selection.
+The choice is saved in this browser, and the appearance toggle switches Light/Dark without changing the theme family.
+Editorial Dark remains the default, and existing saved theme and appearance preferences are preserved.
+Workbench chrome and snapshot output follow the selected palette; interactive terminals keep their independent high-contrast ANSI palette.
+
 Use **Attention Inbox** to triage real Needs input, Failed, and Recently done Agent states without leaving the selected terminal.
 Use **Mission Control** for an optional cross-Space overview and controller-only health summaries from saved SSH machines; it does not replace the terminal-first workbench.
 Remote summaries keep each machine's IDs isolated, omit SSH targets, and fail independently. Herdr does not forward interactive terminal sessions through `--machine`, so open the native Herdr client to control a remote terminal.
