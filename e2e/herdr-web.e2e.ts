@@ -673,6 +673,17 @@ async function prepareVisual(page: Page, theme: VisualTheme) {
   });
 }
 
+test.afterEach(async ({ page }, testInfo) => {
+  if (!testInfo.title.endsWith("visual baseline")) return;
+  // Keep native renders for review even when a stale image passes the tolerance.
+  await page.screenshot({
+    path: testInfo.outputPath("current-visual-baseline.png"),
+    animations: "disabled",
+    caret: "hide",
+    fullPage: true,
+  });
+});
+
 test("desktop light visual baseline", async ({ page }) => {
   await page.setViewportSize({ width: 1536, height: 960 });
   await prepareVisual(page, "editorial-light");
