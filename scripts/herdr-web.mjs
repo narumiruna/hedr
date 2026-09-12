@@ -6,7 +6,7 @@ import { homedir } from "node:os";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineCommand, renderUsage, runMain } from "citty";
-import { startWorkbench } from "./start-workbench.mjs";
+import { npmExecutable, startWorkbench } from "./start-workbench.mjs";
 
 function fail(message) {
   process.stderr.write(`herdr-web: ${message}\n`);
@@ -89,22 +89,39 @@ async function startWeb() {
   }
 }
 
+function updateWeb() {
+  process.stdout.write("Updating herdr-web to the latest release...\n");
+  try {
+    execFileSync(npmExecutable(), ["install", "--global", "herdr-web@latest"], {
+      shell: process.platform === "win32",
+      stdio: "inherit",
+    });
+    process.stdout.write("herdr-web is up to date.\n");
+  } catch {
+    fail("Update failed: npm install --global herdr-web@latest");
+  }
+}
+
 const main = defineCommand({
   meta: {
     name: "herdr-web",
     description:
-      "Start the herdr-web workbench, optionally opening a project directory.",
+      "Start the herdr-web workbench, open a project directory, or update the global installation.",
   },
   args: {
     directory: {
       type: "positional",
       required: false,
-      description: "Project directory to focus or create",
+      description: "Project directory to focus or create, or 'update'",
     },
   },
   async run(context) {
     if (await rejectUnsupportedInvocation(context.rawArgs, context.cmd)) return;
     const { directory } = context.args;
+    if (directory === "update") {
+      updateWeb();
+      return;
+    }
     if (directory === undefined) {
       await startWeb();
       return;
